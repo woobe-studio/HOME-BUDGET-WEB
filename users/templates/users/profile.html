@@ -1,0 +1,47 @@
+{% extends "users/base.html" %}
+{% block title %}Profile Page{% endblock title %}
+{% block content %}
+    <div class="row my-3 p-3" style="background-color: #282a36; color: #f8f8f2;">
+        <img class="rounded-circle account-img" src="{{ user.profile.avatar.url }}" style="cursor: pointer;">
+    </div>
+    {% if user_form.errors %}
+        <div class="alert alert-danger alert-dismissible" role="alert" style="background-color: #ff5555; color: #f8f8f2;">
+            <div id="form_errors">
+                {% for key, value in user_form.errors.items %}
+                    <strong>{{ value }}</strong>
+                {% endfor %}
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    {% endif %}
+    <div class="form-content">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="col-md-5">
+                    <div class="form-group" style="background-color: #44475a; padding: 10px; border-radius: 5px;">
+                        <label class="small mb-1" style="color: #f8f8f2;">Username:</label>
+                        {{ user_form.username }}
+                        <label class="small mb-1" style="color: #f8f8f2;">Email:</label>
+                        {{ user_form.email }}
+                    </div>
+                    <div class="form-group" style="background-color: #44475a; padding: 10px; border-radius: 5px;">
+                        <a href="{% url 'password_change' %}" style="color: #8be9fd;">Change Password</a>
+                        <hr style="border-color: #ff79c6;">
+                        <label class="small mb-1" style="color: #f8f8f2;">Change Avatar:</label>
+                        {{ profile_form.avatar }}
+                    </div>
+                    <div class="form-group" style="background-color: #44475a; padding: 10px; border-radius: 5px;">
+                        <label class="small mb-1" style="color: #f8f8f2;">Bio:</label>
+                        {{ profile_form.bio }}
+                    </div>
+                </div>
+            </div>
+            <br><br>
+            <button type="submit" class="btn btn-dark btn-lg" style="color: #8be9fd;">Save Changes</button>
+            <button type="reset" class="btn btn-dark btn-lg" style="color: #ff79c6;">Reset</button>
+        </form>
+    </div>
+{% endblock content %}
