@@ -5,41 +5,38 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Profile
 
 
+class DraculaTextInput(forms.TextInput):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('attrs', {})
+        kwargs['attrs'].update({'class': 'form-control', 'style': 'background-color: #282a36; color: #f8f8f2;'})
+        super().__init__(*args, **kwargs)
+
+
+class DraculaPasswordInput(forms.PasswordInput):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('attrs', {})
+        kwargs['attrs'].update({'class': 'form-control', 'style': 'background-color: #282a36; color: #f8f8f2;'})
+        super().__init__(*args, **kwargs)
+
+
 class RegisterForm(UserCreationForm):
-    # fields we want to include and customize in our form
     first_name = forms.CharField(max_length=100,
                                  required=True,
-                                 widget=forms.TextInput(attrs={'placeholder': 'First Name',
-                                                               'class': 'form-control',
-                                                               }))
+                                 widget=DraculaTextInput(attrs={'placeholder': 'First Name'}))
     last_name = forms.CharField(max_length=100,
                                 required=True,
-                                widget=forms.TextInput(attrs={'placeholder': 'Last Name',
-                                                              'class': 'form-control',
-                                                              }))
+                                widget=DraculaTextInput(attrs={'placeholder': 'Last Name'}))
     username = forms.CharField(max_length=100,
                                required=True,
-                               widget=forms.TextInput(attrs={'placeholder': 'Username',
-                                                             'class': 'form-control',
-                                                             }))
+                               widget=DraculaTextInput(attrs={'placeholder': 'Username'}))
     email = forms.EmailField(required=True,
-                             widget=forms.TextInput(attrs={'placeholder': 'Email',
-                                                           'class': 'form-control',
-                                                           }))
+                             widget=DraculaTextInput(attrs={'placeholder': 'Email'}))
     password1 = forms.CharField(max_length=50,
                                 required=True,
-                                widget=forms.PasswordInput(attrs={'placeholder': 'Password',
-                                                                  'class': 'form-control',
-                                                                  'data-toggle': 'password',
-                                                                  'id': 'password',
-                                                                  }))
+                                widget=DraculaPasswordInput(attrs={'placeholder': 'Password'}))
     password2 = forms.CharField(max_length=50,
                                 required=True,
-                                widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password',
-                                                                  'class': 'form-control',
-                                                                  'data-toggle': 'password',
-                                                                  'id': 'password',
-                                                                  }))
+                                widget=DraculaPasswordInput(attrs={'placeholder': 'Confirm Password'}))
 
     class Meta:
         model = User
@@ -49,17 +46,10 @@ class RegisterForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(max_length=100,
                                required=True,
-                               widget=forms.TextInput(attrs={'placeholder': 'Username',
-                                                             'class': 'form-control',
-                                                             }))
+                               widget=DraculaTextInput(attrs={'placeholder': 'Username'}))
     password = forms.CharField(max_length=50,
                                required=True,
-                               widget=forms.PasswordInput(attrs={'placeholder': 'Password',
-                                                                 'class': 'form-control',
-                                                                 'data-toggle': 'password',
-                                                                 'id': 'password',
-                                                                 'name': 'password',
-                                                                 }))
+                               widget=DraculaPasswordInput(attrs={'placeholder': 'Password'}))
     remember_me = forms.BooleanField(required=False)
 
     class Meta:
@@ -70,18 +60,25 @@ class LoginForm(AuthenticationForm):
 class UpdateUserForm(forms.ModelForm):
     username = forms.CharField(max_length=100,
                                required=True,
-                               widget=forms.TextInput(attrs={'class': 'form-control'}))
+                               widget=DraculaTextInput())
     email = forms.EmailField(required=True,
-                             widget=forms.TextInput(attrs={'class': 'form-control'}))
+                             widget=DraculaTextInput())
 
     class Meta:
         model = User
         fields = ['username', 'email']
 
 
+class DraculaTextarea(forms.Textarea):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('attrs', {})
+        kwargs['attrs'].update({'class': 'form-control', 'style': 'background-color: #282a36; color: #f8f8f2;'})
+        super().__init__(*args, **kwargs)
+
+
 class UpdateProfileForm(forms.ModelForm):
     avatar = forms.ImageField(widget=forms.FileInput(attrs={'class': 'form-control-file'}))
-    bio = forms.CharField(widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 5}))
+    bio = forms.CharField(required=False, widget=DraculaTextarea(attrs={'rows': 5}))
 
     class Meta:
         model = Profile

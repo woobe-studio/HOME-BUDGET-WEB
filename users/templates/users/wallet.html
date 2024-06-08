@@ -1,0 +1,25 @@
+{% extends "users/base.html" %}
+{% block title %}Wallet Page{% endblock title %}
+{% block content %}
+    <div class="container my-3 p-3" style="background-color: #282a36; color: #f8f8f2;">
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
+                <div class="card shadow-lg border-0 rounded-lg mt-0 mb-3" style="background-color: #44475a;">
+                    <div class="card-body">
+                        <h3 class="text-center" style="color: #f8f8f2;">Wallet</h3>
+                        {% if budget %}
+                            <div style="background-color: #44475a; padding: 10px; border-radius: 5px;">
+                                <label class="small mb-1" style="color: #f8f8f2;">Budget Amount:</label>
+                                <p style="color: #f8f8f2;">${{ budget.amount }}</p>
+                                <label class="small mb-1" style="color: #f8f8f2;">Description:</label>
+                                <p style="color: #f8f8f2;">{{ budget.description }}</p>
+                            </div>
+                        {% else %}
+                            <p style="color: #f8f8f2;">No budget information available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

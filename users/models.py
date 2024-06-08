@@ -8,7 +8,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
-    bio = models.TextField()
+    bio = models.TextField(null=True, blank=True, default='')
 
     def __str__(self):
         return self.user.username
@@ -23,3 +23,12 @@ class Profile(models.Model):
             new_img = (100, 100)
             img.thumbnail(new_img)
             img.save(self.avatar.path)
+
+
+class Budget(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Budget"
