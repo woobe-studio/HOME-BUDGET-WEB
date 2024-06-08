@@ -14,6 +14,16 @@
     <!--Font awesome icons -->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
 
+    <!-- Custom CSS for success messages -->
+    <style>
+        /* Custom styling for success messages */
+        .alert-success {
+            color: #50fa7b;
+            background-color: #282a36;
+            border-color: #50fa7b;
+        }
+    </style>
+
     <title>{% block title %} {% endblock %} </title>
 </head>
 <body style="background-color: #282a36; color: #f8f8f2;">
@@ -33,7 +43,6 @@
                   {% else %}
                     <a href="{% url 'login' %}" class="nav-item nav-link" style="color: #bd93f9;">Sign in</a>
                   {% endif %}
-
                 </div>
             </div>
         </nav>
