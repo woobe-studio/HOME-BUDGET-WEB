@@ -83,3 +83,8 @@ class UpdateProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
         fields = ['avatar', 'bio']
+
+
+class WalletForm(forms.Form):
+    amount = forms.DecimalField(label='Amount', max_digits=10, decimal_places=2)
+    description = forms.CharField(label='Description', max_length=100)

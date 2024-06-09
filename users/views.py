@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
@@ -6,7 +8,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views import View
 from django.contrib.auth.decorators import login_required
 
-from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm
+from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, WalletForm
+from .models import BalanceChange
 
 
 def home(request):
@@ -44,7 +47,6 @@ class RegisterView(View):
         return render(request, self.template_name, {'form': form})
 
 
-# Class based view that extends from the built in login view to add a remember me functionality
 class CustomLoginView(LoginView):
     form_class = LoginForm
 
@@ -52,13 +54,10 @@ class CustomLoginView(LoginView):
         remember_me = form.cleaned_data.get('remember_me')
 
         if not remember_me:
-            # set session expiry to 0 seconds. So it will automatically close the session after the browser is closed.
             self.request.session.set_expiry(0)
 
-            # Set session as modified to force data updates/cookie to be saved.
             self.request.session.modified = True
 
-        # else browser session will be as long as the session cookie time "SESSION_COOKIE_AGE" defined in settings.py
         return super(CustomLoginView, self).form_valid(form)
 
 
@@ -96,6 +95,44 @@ def profile(request):
 
     return render(request, 'users/profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
+
 @login_required
 def wallet(request):
-    return render(request, 'users/wallet.html')
+    profile = request.user.profile
+    if request.method == 'POST':
+        form = WalletForm(request.POST)
+        if form.is_valid():
+            amount = form.cleaned_data.get('amount')
+            description = form.cleaned_data.get('description')
+            if amount != Decimal('0'):
+                if amount < Decimal('0'):
+                    if profile.balance >= abs(amount):
+                        profile.balance += amount
+                        profile.save()
+                        BalanceChange.objects.create(profile=profile, amount=amount, description=description)
+                        messages.success(request, f'Balance updated successfully: ${amount:.2f} | Description: {description}')
+                    else:
+                        messages.error(request, 'Insufficient balance for the transaction')
+                else:
+                    profile.balance += amount
+                    profile.save()
+                    BalanceChange.objects.create(profile=profile, amount=amount, description=description)
+                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Description: {description}')
+            else:
+                messages.error(request, 'Amount must be non-zero to update the balance')
+            return redirect('users-wallet')
+    else:
+        form = WalletForm()
+    formatted_balance = f'{profile.balance:.2f}'
+    balance_changes = BalanceChange.objects.filter(profile=profile)
+
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes})
+
+
+@login_required
+def clear_balance_changes(request):
+    profile = request.user.profile
+
+    BalanceChange.objects.filter(profile=profile).delete()
+
+    return redirect('users-wallet')

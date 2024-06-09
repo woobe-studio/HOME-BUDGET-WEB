@@ -1,25 +1,63 @@
 {% extends "users/base.html" %}
 {% block title %}Wallet Page{% endblock title %}
 {% block content %}
-    <div class="container my-3 p-3" style="background-color: #282a36; color: #f8f8f2;">
-        <div class="row justify-content-center">
-            <div class="col-lg-5">
-                <div class="card shadow-lg border-0 rounded-lg mt-0 mb-3" style="background-color: #44475a;">
-                    <div class="card-body">
-                        <h3 class="text-center" style="color: #f8f8f2;">Wallet</h3>
-                        {% if budget %}
-                            <div style="background-color: #44475a; padding: 10px; border-radius: 5px;">
-                                <label class="small mb-1" style="color: #f8f8f2;">Budget Amount:</label>
-                                <p style="color: #f8f8f2;">${{ budget.amount }}</p>
-                                <label class="small mb-1" style="color: #f8f8f2;">Description:</label>
-                                <p style="color: #f8f8f2;">{{ budget.description }}</p>
-                            </div>
-                        {% else %}
-                            <p style="color: #f8f8f2;">No budget information available.</p>
-                        {% endif %}
-                    </div>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+                <div class="card-body">
+                    <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
+                    <p class="text-center mb-4"> Current Balance: <span style="color: #41ff00;">${{ balance }}</span></p>
+                    </p>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="amount" style="color: #f8f8f2;">Amount</label>
+                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" style="background-color: #282a36; color: #f8f8f2;" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description" style="color: #f8f8f2;">Description</label>
+                            <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;" required>
+                        </div>
+                        <button type="submit" class="btn btn-dark btn-block">Update Funds</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+                <div class="card-body">
+                    <h2 class="text-center mb-4" style="color: #bd93f9;">Balance Changes</h2>
+                    <ul class="list-group">
+                        {% if balance_changes %}
+                            <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
+                                <form method="post" action="{% url 'clear_balance_changes' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm float-right">Clear Balance History</button>
+                                </form>
+                            </li>
+                            {% for change in balance_changes %}
+                            <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
+                                <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
+                                <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
+                                {% if change.amount > 0 %}
+                                    <p>Amount: <span style="color: #41ff00;">${{ change.amount }}</span></p>
+                                {% else %}
+                                    <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
+                                {% endif %}
+                            </li>
+                            {% endfor %}
+                        {% else %}
+                        <p class="text-center" style="color: #f8f8f2;">No balance changes yet.</p>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
