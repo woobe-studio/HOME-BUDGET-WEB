@@ -9,7 +9,7 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, WalletForm
-from .models import BalanceChange, Profile
+from .models import BalanceChange, Profile, Category
 
 
 def home(request):
@@ -103,25 +103,37 @@ def wallet(request):
     except Profile.DoesNotExist:
         profile = Profile.objects.create(user=request.user)
 
+    categories = Category.objects.all()
+
     if request.method == 'POST':
         form = WalletForm(request.POST)
+        print(form.is_valid(), ' ', form.errors)
         if form.is_valid():
             amount = form.cleaned_data.get('amount')
             description = form.cleaned_data.get('description')
+            category = form.cleaned_data.get('category')
+            new_category = form.cleaned_data.get('new_category')
+            if category:
+                category_obj = category
+            elif new_category:
+                category_obj, created = Category.objects.get_or_create(name=new_category)
+            if not category and not new_category:
+                messages.error(request, 'No category was selected')
+                return redirect('users-wallet')
             if amount != Decimal('0'):
                 if amount < Decimal('0'):
                     if profile.balance >= abs(amount):
                         profile.balance += amount
                         profile.save()
-                        BalanceChange.objects.create(profile=profile, amount=amount, description=description)
-                        messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {"None"} | Description: {description}')
+                        BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
+                        messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
                     else:
                         messages.error(request, 'Insufficient balance for the transaction')
                 else:
                     profile.balance += amount
                     profile.save()
-                    BalanceChange.objects.create(profile=profile, amount=amount, description=description)
-                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {"None"} | Description: {description}')
+                    BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
+                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
             else:
                 messages.error(request, 'Amount must be non-zero to update the balance')
             return redirect('users-wallet')
@@ -130,7 +142,7 @@ def wallet(request):
     formatted_balance = f'{profile.balance:.2f}'
     balance_changes = BalanceChange.objects.filter(profile=profile)
 
-    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes})
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes, 'categories': categories})
 
 
 @login_required

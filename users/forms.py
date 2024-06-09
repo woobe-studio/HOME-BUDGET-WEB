@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Profile, Budget
+from .models import Profile, Budget, Category
 
 
 class DraculaTextInput(forms.TextInput):
@@ -88,3 +88,16 @@ class UpdateProfileForm(forms.ModelForm):
 class WalletForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10, decimal_places=2)
     description = forms.CharField(label='Description', max_length=100)
+    category = forms.ModelChoiceField(queryset=Category.objects.all(), empty_label="Select Category", required=False)
+    new_category = forms.CharField(label='New Category', max_length=30, required=False)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        category = cleaned_data.get("category")
+        new_category = cleaned_data.get("new_category")
+
+        if new_category and not category:
+            del self.errors['category']
+        print(cleaned_data)
+        return cleaned_data
+
