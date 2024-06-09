@@ -114,14 +114,14 @@ def wallet(request):
                         profile.balance += amount
                         profile.save()
                         BalanceChange.objects.create(profile=profile, amount=amount, description=description)
-                        messages.success(request, f'Balance updated successfully: ${amount:.2f} | Description: {description}')
+                        messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {"None"} | Description: {description}')
                     else:
                         messages.error(request, 'Insufficient balance for the transaction')
                 else:
                     profile.balance += amount
                     profile.save()
                     BalanceChange.objects.create(profile=profile, amount=amount, description=description)
-                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Description: {description}')
+                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {"None"} | Description: {description}')
             else:
                 messages.error(request, 'Amount must be non-zero to update the balance')
             return redirect('users-wallet')
