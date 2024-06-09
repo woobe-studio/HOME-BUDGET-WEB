@@ -8,7 +8,6 @@
                 <div class="card-body">
                     <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
                     <p class="text-center mb-4"> Current Balance: <span style="color: #41ff00;">${{ balance }}</span></p>
-                    </p>
                     <form method="post">
                         {% csrf_token %}
                         <div class="form-group">
@@ -18,6 +17,19 @@
                         <div class="form-group">
                             <label for="description" style="color: #f8f8f2;">Description</label>
                             <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category" style="color: #f8f8f2;">Category</label>
+                            <select class="form-control" id="category" name="category">
+                                <option value="">Select Category</option>
+                                {% for budget in budgets %}
+                                    <option value="{{ budget.category }}">{{ budget.category }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="new_category" style="color: #f8f8f2;">New Category</label>
+                            <input type="text" class="form-control" id="new_category" name="new_category" style="background-color: #282a36; color: #f8f8f2;">
                         </div>
                         <button type="submit" class="btn btn-dark btn-block">Update Funds</button>
                     </form>
@@ -49,6 +61,7 @@
                                 {% else %}
                                     <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
                                 {% endif %}
+                                <p>Category: <span style="color: #9559ff;">{{ change.category }}</span></p>
                             </li>
                             {% endfor %}
                         {% else %}

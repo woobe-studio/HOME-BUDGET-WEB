@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Profile
+from .models import Profile, Budget
 
 
 class DraculaTextInput(forms.TextInput):
@@ -88,3 +88,4 @@ class UpdateProfileForm(forms.ModelForm):
 class WalletForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10, decimal_places=2)
     description = forms.CharField(label='Description', max_length=100)
+    category = forms.ModelChoiceField(queryset=Budget.objects.all(), required=False, empty_label=None)

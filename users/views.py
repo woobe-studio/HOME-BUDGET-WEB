@@ -9,7 +9,7 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, WalletForm
-from .models import BalanceChange
+from .models import BalanceChange, Profile
 
 
 def home(request):
@@ -98,7 +98,11 @@ def profile(request):
 
 @login_required
 def wallet(request):
-    profile = request.user.profile
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        profile = Profile.objects.create(user=request.user)
+
     if request.method == 'POST':
         form = WalletForm(request.POST)
         if form.is_valid():
