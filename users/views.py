@@ -99,7 +99,7 @@ def profile(request):
 @login_required
 def wallet(request):
     profile = request.user.profile
-    form = WalletForm()  # Initialize form outside the conditional block
+    form = WalletForm()
     if request.method == 'POST':
         if request.POST.get('action') == 'update_funds':
             form = WalletForm(request.POST)
@@ -155,6 +155,12 @@ def clear_balance_changes(request):
 
 @login_required
 def clear_categories(request):
+    profile = request.user.profile
     Category.objects.all().delete()
-    messages.success(request, "All categories have been cleared.")
+    default_categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
+    for new_category in default_categories:
+        category_obj, created = Category.objects.get_or_create(name=new_category)
+        profile.categories.add(category_obj)
+
+    messages.success(request, "All categories have been cleared and default categories have been added.")
     return redirect('users-wallet')
