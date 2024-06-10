@@ -107,7 +107,6 @@ def wallet(request):
 
     if request.method == 'POST':
         form = WalletForm(request.POST)
-        print(form.is_valid(), ' ', form.errors)
         if form.is_valid():
             amount = form.cleaned_data.get('amount')
             description = form.cleaned_data.get('description')
@@ -151,4 +150,11 @@ def clear_balance_changes(request):
 
     BalanceChange.objects.filter(profile=profile).delete()
 
+    return redirect('users-wallet')
+
+
+@login_required
+def clear_categories(request):
+    Category.objects.all().delete()
+    messages.success(request, "All categories have been cleared.")
     return redirect('users-wallet')
