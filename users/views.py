@@ -9,7 +9,7 @@ from django.views import View
 from django.contrib.auth.decorators import login_required
 
 from .forms import RegisterForm, LoginForm, UpdateUserForm, UpdateProfileForm, WalletForm
-from .models import BalanceChange, Profile, Category
+from .models import BalanceChange, Category
 
 
 def home(request):
@@ -140,7 +140,7 @@ def wallet(request):
             return redirect('users-wallet')
     formatted_balance = f'{profile.balance:.2f}'
     balance_changes = BalanceChange.objects.filter(profile=profile)
-    categories = profile.categories.all()
+    categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
     return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes, 'categories': categories})
 
 
@@ -156,10 +156,11 @@ def clear_balance_changes(request):
 @login_required
 def clear_categories(request):
     profile = request.user.profile
-    Category.objects.all().delete()
+    profile.categories.clear()
     default_categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
-    for new_category in default_categories:
-        category_obj, created = Category.objects.get_or_create(name=new_category)
+    default_categories.sort()
+    for category_name in default_categories:
+        category_obj, created = Category.objects.get_or_create(name=category_name)
         profile.categories.add(category_obj)
 
     messages.success(request, "All categories have been cleared and default categories have been added.")

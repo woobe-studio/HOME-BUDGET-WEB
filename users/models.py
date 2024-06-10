@@ -59,6 +59,15 @@ class Category(models.Model):
 class BalanceChange(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    description = models.CharField(max_length=100)
+    description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    category_name = models.CharField(max_length=255, blank=True, editable=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if self.category:
+            self.category_name = self.category.name
+        super(BalanceChange, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.description} - {self.amount}'

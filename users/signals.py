@@ -10,6 +10,7 @@ def create_profile(sender, instance, created, **kwargs):
     if created:
         profile = Profile.objects.create(user=instance)
         default_categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
+        default_categories.sort()
         for new_category in default_categories:
             category_obj, created = Category.objects.get_or_create(name=new_category)
             profile.categories.add(category_obj)

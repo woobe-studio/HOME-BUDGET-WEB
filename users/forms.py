@@ -87,16 +87,23 @@ class UpdateProfileForm(forms.ModelForm):
 
 class WalletForm(forms.Form):
     amount = forms.DecimalField(label='Amount', max_digits=10, decimal_places=2)
-    description = forms.CharField(label='Description', max_length=100)
+    description = forms.CharField(label='Description', max_length=100, required=False)
     category = forms.ModelChoiceField(queryset=Category.objects.all(), empty_label="Select Category", required=False)
     new_category = forms.CharField(label='New Category', max_length=30, required=False)
 
     def clean(self):
         cleaned_data = super().clean()
+        amount = cleaned_data.get('amount')
         category = cleaned_data.get("category")
+        description = cleaned_data.get("description")
         new_category = cleaned_data.get("new_category")
 
         if new_category and not category:
             del self.errors['category']
+        if not description:
+            if amount >= 0:
+                cleaned_data["description"] = "Income"
+            else:
+                cleaned_data["description"] = "Expense"
         print(cleaned_data)
         return cleaned_data

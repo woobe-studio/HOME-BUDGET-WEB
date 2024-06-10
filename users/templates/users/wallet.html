@@ -17,7 +17,7 @@
                         </div>
                         <div class="form-group">
                             <label for="description" style="color: #f8f8f2;">Description</label>
-                            <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;" required>
+                            <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;">
                         </div>
                         <div class="form-group">
                             <label for="category" style="color: #f8f8f2;">Category</label>
@@ -85,8 +85,8 @@
 </div>
 <script>
     document.getElementById("category").addEventListener("change", function() {
-        var category = document.getElementById("category").value;
-        if (category == "new_category") {
+        let category = document.getElementById("category").value;
+        if (category === "new_category") {
             document.getElementById("new-category-field").style.display = "block";
         } else {
             document.getElementById("new-category-field").style.display = "none";
