@@ -33,7 +33,7 @@
                             <label for="new_category" style="color: #f8f8f2;">New Category</label>
                             <input type="text" class="form-control" id="new_category" name="new_category" style="background-color: #282a36; color: #f8f8f2;">
                         </div>
-                        <button type="submit" class="btn btn-dark btn-block">Update Funds</button>
+                        <button type="submit" class="btn btn-dark btn-block" name="action" value="update_funds">Update Funds</button>
                     </form>
                     <form method="post" action="{% url 'users-wallet' %}" class="mt-2">
                         {% csrf_token %}

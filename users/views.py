@@ -98,49 +98,49 @@ def profile(request):
 
 @login_required
 def wallet(request):
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
-
-    categories = Category.objects.all()
-
+    profile = request.user.profile
+    form = WalletForm()  # Initialize form outside the conditional block
     if request.method == 'POST':
-        form = WalletForm(request.POST)
-        if form.is_valid():
-            amount = form.cleaned_data.get('amount')
-            description = form.cleaned_data.get('description')
-            category = form.cleaned_data.get('category')
-            new_category = form.cleaned_data.get('new_category')
-            if category:
-                category_obj = category
-            elif new_category:
-                category_obj, created = Category.objects.get_or_create(name=new_category)
-            if not category and not new_category:
-                messages.error(request, 'No category was selected')
-                return redirect('users-wallet')
-            if amount != Decimal('0'):
-                if amount < Decimal('0'):
-                    if profile.balance >= abs(amount):
+        if request.POST.get('action') == 'update_funds':
+            form = WalletForm(request.POST)
+            if form.is_valid():
+                amount = form.cleaned_data.get('amount')
+                description = form.cleaned_data.get('description')
+                category = form.cleaned_data.get('category')
+                new_category = form.cleaned_data.get('new_category')
+                if new_category:
+                    category_obj, created = Category.objects.get_or_create(name=new_category)
+                    profile.categories.add(category_obj)
+                elif category:
+                    category_obj = category
+                    profile.categories.add(category_obj)
+                else:
+                    messages.error(request, 'No category was selected')
+                    return redirect('users-wallet')
+                if amount != Decimal('0'):
+                    if amount < Decimal('0'):
+                        if profile.balance >= abs(amount):
+                            profile.balance += amount
+                            profile.save()
+                            BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
+                            messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
+                        else:
+                            messages.error(request, 'Insufficient balance for the transaction')
+                    else:
                         profile.balance += amount
                         profile.save()
                         BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
                         messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
-                    else:
-                        messages.error(request, 'Insufficient balance for the transaction')
                 else:
-                    profile.balance += amount
-                    profile.save()
-                    BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
-                    messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
-            else:
-                messages.error(request, 'Amount must be non-zero to update the balance')
+                    messages.error(request, 'Amount must be non-zero to update the balance')
+                return redirect('users-wallet')
+        elif request.POST.get('action') == 'clear_categories':
+            profile.categories.clear()
+            messages.success(request, 'Categories cleared successfully')
             return redirect('users-wallet')
-    else:
-        form = WalletForm()
     formatted_balance = f'{profile.balance:.2f}'
     balance_changes = BalanceChange.objects.filter(profile=profile)
-
+    categories = profile.categories.all()
     return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes, 'categories': categories})
 
 

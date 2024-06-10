@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
-from .models import Profile, Budget, Category
+from .models import Profile, Category
 
 
 class DraculaTextInput(forms.TextInput):
@@ -100,4 +100,3 @@ class WalletForm(forms.Form):
             del self.errors['category']
         print(cleaned_data)
         return cleaned_data
-

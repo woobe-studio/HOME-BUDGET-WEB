@@ -6,6 +6,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from django.contrib.auth import views as auth_views
+
+from users import views
 from users.views import CustomLoginView, ResetPasswordView, ChangePasswordView
 
 from users.forms import LoginForm
@@ -33,5 +35,7 @@ urlpatterns = [
     path('password-change/', ChangePasswordView.as_view(), name='password_change'),
 
     re_path(r'^oauth/', include('social_django.urls', namespace='social')),
+
+    path('clear-categories/', views.clear_categories, name='clear_categories'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

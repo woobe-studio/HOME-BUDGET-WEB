@@ -15,7 +15,7 @@ from pathlib import Path
 # To keep secret keys in environment variables
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path='data.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +26,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -125,6 +124,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Warsaw'
 
+
 USE_I18N = True
 
 USE_L10N = True
@@ -144,12 +144,11 @@ MEDIA_URL = '/media/'
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
 
+# social auth configs for GitHub
+SOCIAL_AUTH_GITHUB_KEY = str(os.getenv('SOCIAL_AUTH_GITHUB_KEY'))
+SOCIAL_AUTH_GITHUB_SECRET = str(os.getenv('SOCIAL_AUTH_GITHUB_SECRET'))
 
-# social auth configs for github
-SOCIAL_AUTH_GITHUB_KEY = str(os.getenv('GITHUB_KEY'))
-SOCIAL_AUTH_GITHUB_SECRET = str(os.getenv('GITHUB_SECRET'))
-
-# social auth configs for google
+# social auth configs for Google
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('GOOGLE_KEY'))
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_SECRET'))
 

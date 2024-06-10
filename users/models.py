@@ -10,6 +10,7 @@ class Profile(models.Model):
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
     bio = models.TextField(null=True, blank=True, default='')
     balance = models.DecimalField(default=Decimal('0.00'), max_digits=12, decimal_places=2)
+    categories = models.ManyToManyField('Category', blank=True)
 
     def __str__(self):
         return self.user.username
@@ -54,10 +55,10 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class BalanceChange(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=100)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-
