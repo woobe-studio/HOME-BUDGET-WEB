@@ -160,7 +160,7 @@ def clear_categories(request):
 
 @login_required
 def balance_changes(request):
-    balance_changes = BalanceChange.objects.all()
+    balance_changes = BalanceChange.objects.order_by('-timestamp')
     paginator = Paginator(balance_changes, 3)
 
     page_number = request.GET.get('page')
