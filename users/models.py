@@ -6,7 +6,6 @@ from decimal import Decimal
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
     bio = models.TextField(null=True, blank=True, default='')
     balance = models.DecimalField(default=Decimal('0.00'), max_digits=12, decimal_places=2)
@@ -17,14 +16,11 @@ class Profile(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-
         img = Image.open(self.avatar.path)
-
         if img.height > 100 or img.width > 100:
             new_img = (100, 100)
             img.thumbnail(new_img)
             img.save(self.avatar.path)
-
         if self._state.adding:
             description = 'Initial balance'
         else:
@@ -36,7 +32,6 @@ class Profile(models.Model):
                 description = f'Subtracted ${abs(amount_changed):.2f}'
             else:
                 return
-
         BalanceChange.objects.create(profile=self, amount=self.balance, description=description)
 
 
@@ -57,7 +52,7 @@ class Category(models.Model):
 
 
 class BalanceChange(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='balance_changes')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
@@ -67,7 +62,7 @@ class BalanceChange(models.Model):
     def save(self, *args, **kwargs):
         if self.category:
             self.category_name = self.category.name
-        super(BalanceChange, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.description} - {self.amount}'

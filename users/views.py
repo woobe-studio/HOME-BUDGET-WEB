@@ -139,18 +139,8 @@ def wallet(request):
             messages.success(request, 'Categories cleared successfully')
             return redirect('users-wallet')
     formatted_balance = f'{profile.balance:.2f}'
-    balance_changes = BalanceChange.objects.filter(profile=profile)
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'balance_changes': balance_changes, 'categories': categories})
-
-
-@login_required
-def clear_balance_changes(request):
-    profile = request.user.profile
-
-    BalanceChange.objects.filter(profile=profile).delete()
-
-    return redirect('users-wallet')
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'categories': categories})
 
 
 @login_required
@@ -165,3 +155,17 @@ def clear_categories(request):
 
     messages.success(request, "All categories have been cleared and default categories have been added.")
     return redirect('users-wallet')
+
+
+@login_required
+def balance_changes(request):
+    profile = request.user.profile
+    balance_changes = BalanceChange.objects.filter(profile=profile)
+    return render(request, 'users/balance_changes.html', {'balance_changes': balance_changes})
+
+
+@login_required
+def clear_balance_changes(request):
+    profile = request.user.profile
+    BalanceChange.objects.filter(profile=profile).delete()
+    return redirect('users-balance_changes')
