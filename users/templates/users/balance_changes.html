@@ -10,14 +10,8 @@
                         <h2 class="mb-3" style="color: #bd93f9;">Balance Changes</h2>
                     </div>
                     <ul class="list-group">
-                        {% if balance_changes %}
-                            <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
-                                <form method="post" action="{% url 'users-clear_balance_changes' %}" id="clear-balance-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm float-right" id="clear-balance-button">Clear Balance History</button>
-                                </form>
-                            </li>
-                            {% for change in balance_changes %}
+                        {% if page_obj %}
+                            {% for change in page_obj %}
                             <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
                                 <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
                                 <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
@@ -33,6 +27,23 @@
                         <p class="text-center" style="color: #f8f8f2;">No balance changes yet.</p>
                         {% endif %}
                     </ul>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <form method="post" action="{% url 'users-clear_balance_changes' %}" id="clear-balance-form">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Clear Balance History</button>
+                        </form>
+                        <div>
+                            {% if page_obj.has_previous %}
+                                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-dark">Previous</a>
+                            {% endif %}
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-dark">Next</a>
+                            {% endif %}
+                            <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

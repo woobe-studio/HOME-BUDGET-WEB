@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
@@ -159,9 +160,13 @@ def clear_categories(request):
 
 @login_required
 def balance_changes(request):
-    profile = request.user.profile
-    balance_changes = BalanceChange.objects.filter(profile=profile)
-    return render(request, 'users/balance_changes.html', {'balance_changes': balance_changes})
+    balance_changes = BalanceChange.objects.all()
+    paginator = Paginator(balance_changes, 3)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'users/balance_changes.html', {'page_obj': page_obj})
 
 
 @login_required
