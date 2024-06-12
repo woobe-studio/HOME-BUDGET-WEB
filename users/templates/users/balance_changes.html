@@ -9,6 +9,24 @@
                     <div class="col-md-20 text-center">
                         <h2 class="mb-3" style="color: #bd93f9;">Balance Changes</h2>
                     </div>
+                    <form method="get" class="mb-3">
+                        <div class="form-group row justify-content-center">
+                            <label for="sort_by" class="col-auto col-form-label" style="color: #f8f8f2;">Sort by:</label>
+                            <div class="col-auto">
+                                <select id="sort_by" name="sort_by" class="form-control">
+                                    <option value="AscendingCost">Ascending Cost</option>
+                                    <option value="DescendingCost">Descending Cost</option>
+                                    <option value="DateOldestFirst">Date Oldest First</option>
+                                    <option value="DateNewestFirst">Date Newest First</option>
+                                    <option value="AscendingCategoryName">Ascending Category Name</option>
+                                    <option value="DescendingCategoryName">Descending Category Name</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-dark">Sort</button>
+                            </div>
+                        </div>
+                    </form>
                     <ul class="list-group">
                         {% if page_obj %}
                             {% for change in page_obj %}

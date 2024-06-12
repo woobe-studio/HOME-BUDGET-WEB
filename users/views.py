@@ -160,9 +160,25 @@ def clear_categories(request):
 
 @login_required
 def balance_changes(request):
-    balance_changes = BalanceChange.objects.order_by('-timestamp')
-    paginator = Paginator(balance_changes, 3)
+    sort_by = request.GET.get('sort_by')
+    sorted_changes = BalanceChange.objects
 
+    if sort_by == 'AscendingCost':
+        balance_changes = sorted_changes.order_by('amount')
+    elif sort_by == 'DescendingCost':
+        balance_changes = sorted_changes.order_by('-amount')
+    elif sort_by == 'DateOldestFirst':
+        balance_changes = sorted_changes.order_by('timestamp')
+    elif sort_by == 'DateNewestFirst':
+        balance_changes = sorted_changes.order_by('-timestamp')
+    elif sort_by == 'AscendingCategoryName':
+        balance_changes = sorted_changes.order_by('category')
+    elif sort_by == 'DescendingCategoryName':
+        balance_changes = sorted_changes.order_by('-category')
+    else:
+        balance_changes = sorted_changes.order_by('-timestamp')
+
+    paginator = Paginator(balance_changes, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
