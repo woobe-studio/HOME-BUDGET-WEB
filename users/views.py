@@ -182,7 +182,7 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'users/balance_changes.html', {'page_obj': page_obj})
+    return render(request, 'users/balance_changes.html', {'page_obj': page_obj, 'sort_by': sort_by})
 
 
 @login_required

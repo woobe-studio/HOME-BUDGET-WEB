@@ -14,12 +14,12 @@
                             <label for="sort_by" class="col-auto col-form-label" style="color: #f8f8f2;">Sort by:</label>
                             <div class="col-auto">
                                 <select id="sort_by" name="sort_by" class="form-control">
-                                    <option value="AscendingCost">Ascending Cost</option>
-                                    <option value="DescendingCost">Descending Cost</option>
-                                    <option value="DateOldestFirst">Date Oldest First</option>
-                                    <option value="DateNewestFirst">Date Newest First</option>
-                                    <option value="AscendingCategoryName">Ascending Category Name</option>
-                                    <option value="DescendingCategoryName">Descending Category Name</option>
+                                    <option value="AscendingCost" {% if sort_by == 'AscendingCost' %}selected{% endif %}>Ascending Cost</option>
+                                    <option value="DescendingCost" {% if sort_by == 'DescendingCost' %}selected{% endif %}>Descending Cost</option>
+                                    <option value="DateOldestFirst" {% if sort_by == 'DateOldestFirst' %}selected{% endif %}>Date Oldest First</option>
+                                    <option value="DateNewestFirst" {% if sort_by == 'DateNewestFirst' %}selected{% endif %}>Date Newest First</option>
+                                    <option value="AscendingCategoryName" {% if sort_by == 'AscendingCategoryName' %}selected{% endif %}>Ascending Category Name</option>
+                                    <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
                                 </select>
                             </div>
                             <div class="col-auto">
@@ -54,10 +54,10 @@
                         </form>
                         <div>
                             {% if page_obj.has_previous %}
-                                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-dark">Previous</a>
+                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}" class="btn btn-dark">Previous</a>
                             {% endif %}
                             {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-dark">Next</a>
+                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}" class="btn btn-dark">Next</a>
                             {% endif %}
                             <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                         </div>
