@@ -11,7 +11,6 @@
                     </div>
                     <form method="get" class="mb-3">
                         <div class="form-group row justify-content-center">
-                            <label for="sort_by" class="col-auto col-form-label" style="color: #f8f8f2;">Sort by:</label>
                             <div class="col-auto">
                                 <select id="sort_by" name="sort_by" class="form-control">
                                     <option value="AscendingCost" {% if sort_by == 'AscendingCost' %}selected{% endif %}>Ascending Cost</option>
@@ -23,8 +22,24 @@
                                 </select>
                             </div>
                             <div class="col-auto">
-                                <button type="submit" class="btn btn-dark">Sort</button>
+                                <select id="filter_by" name="filter_by" class="form-control">
+                                    <option value="None" {% if filter_by == 'None' %}selected{% endif %}>-----</option>
+                                    <option value="Category" {% if filter_by == 'Category' %}selected{% endif %}>Category</option>
+                                </select>
                             </div>
+                        </div>
+                        <div class="form-group d-flex align-items-end">
+                            <div style="flex: 1;">
+                            <select class="form-control" id="category" name="selected_category" style="display: {% if filter_by != 'Category' %}none{% endif %}">
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-auto text-center">
+                            <button type="submit" class="btn btn-dark">Check</button>
                         </div>
                     </form>
                     <ul class="list-group">
@@ -54,10 +69,10 @@
                         </form>
                         <div>
                             {% if page_obj.has_previous %}
-                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}" class="btn btn-dark">Previous</a>
+                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}" class="btn btn-dark">Previous</a>
                             {% endif %}
                             {% if page_obj.has_next %}
-                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}" class="btn btn-dark">Next</a>
+                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}" class="btn btn-dark">Next</a>
                             {% endif %}
                             <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                         </div>
@@ -68,9 +83,12 @@
     </div>
 </div>
 <script>
-    document.getElementById("clear-balance-form").addEventListener("submit", function(event) {
-        if (!confirm("Do you really want to clear the balance history?")) {
-            event.preventDefault();
+    document.getElementById("filter_by").addEventListener("change", function() {
+        let categorySelection = document.getElementById("category");
+        if (this.value === "Category") {
+            categorySelection.style.display = "block";
+        } else {
+            categorySelection.style.display = "none";
         }
     });
 </script>

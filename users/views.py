@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.views import LoginView, PasswordResetView, PasswordChangeView
 from django.contrib import messages
@@ -160,8 +160,18 @@ def clear_categories(request):
 
 @login_required
 def balance_changes(request):
+    profile = request.user.profile
     sort_by = request.GET.get('sort_by')
+    filter_by = request.GET.get('filter_by')
+    selected_category = request.GET.get('selected_category')
+
     sorted_changes = BalanceChange.objects
+
+    if filter_by != 'None' and selected_category:
+        category = get_object_or_404(Category, name=selected_category)
+        sorted_changes = sorted_changes.filter(category=category)
+    else:
+        filter_by = None
 
     if sort_by == 'AscendingCost':
         balance_changes = sorted_changes.order_by('amount')
@@ -172,9 +182,9 @@ def balance_changes(request):
     elif sort_by == 'DateNewestFirst':
         balance_changes = sorted_changes.order_by('-timestamp')
     elif sort_by == 'AscendingCategoryName':
-        balance_changes = sorted_changes.order_by('category')
+        balance_changes = sorted_changes.order_by('category__name')
     elif sort_by == 'DescendingCategoryName':
-        balance_changes = sorted_changes.order_by('-category')
+        balance_changes = sorted_changes.order_by('-category__name')
     else:
         balance_changes = sorted_changes.order_by('-timestamp')
         sort_by = 'DateNewestFirst'
@@ -183,7 +193,8 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'users/balance_changes.html', {'page_obj': page_obj, 'sort_by': sort_by})
+    categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
+    return render(request, 'users/balance_changes.html', {'page_obj': page_obj, 'sort_by': sort_by, 'filter_by': filter_by, "selected_category": selected_category, 'categories': categories})
 
 
 @login_required
