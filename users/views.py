@@ -177,6 +177,7 @@ def balance_changes(request):
         balance_changes = sorted_changes.order_by('-category')
     else:
         balance_changes = sorted_changes.order_by('-timestamp')
+        sort_by = 'DateNewestFirst'
 
     paginator = Paginator(balance_changes, 3)
     page_number = request.GET.get('page')
