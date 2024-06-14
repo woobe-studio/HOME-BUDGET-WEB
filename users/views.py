@@ -1,4 +1,4 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
@@ -164,14 +164,36 @@ def balance_changes(request):
     sort_by = request.GET.get('sort_by')
     filter_by = request.GET.get('filter_by')
     selected_category = request.GET.get('selected_category')
+    min_amount = request.GET.get('min_amount')
+    max_amount = request.GET.get('max_amount')
 
-    sorted_changes = BalanceChange.objects
+    try:
+        min_amount = Decimal(min_amount) if min_amount else None
+    except (InvalidOperation, ValueError):
+        min_amount = None
 
-    if filter_by != 'None' and selected_category:
+    try:
+        max_amount = Decimal(max_amount) if max_amount else None
+    except (InvalidOperation, ValueError):
+        max_amount = None
+
+    sorted_changes = BalanceChange.objects.filter(profile=profile)
+
+    category_filter_display = "none"
+    amount_filter_display = "none"
+    data_filter_display = "none"
+    if selected_category != "Select Category":
+        category_filter_display = "block"
+
+    if selected_category and selected_category != "None":
         category = get_object_or_404(Category, name=selected_category)
         sorted_changes = sorted_changes.filter(category=category)
-    else:
-        filter_by = None
+    if min_amount is not None:
+        sorted_changes = sorted_changes.filter(amount__gte=min_amount)
+        amount_filter_display = 'block'
+    if max_amount is not None:
+        sorted_changes = sorted_changes.filter(amount__lte=max_amount)
+        amount_filter_display = 'block'
 
     if sort_by == 'AscendingCost':
         balance_changes = sorted_changes.order_by('amount')
@@ -187,18 +209,29 @@ def balance_changes(request):
         balance_changes = sorted_changes.order_by('-category__name')
     else:
         balance_changes = sorted_changes.order_by('-timestamp')
-        sort_by = 'DateNewestFirst'
+        sort_by = 'SelectSort'
 
     paginator = Paginator(balance_changes, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/balance_changes.html', {'page_obj': page_obj, 'sort_by': sort_by, 'filter_by': filter_by, "selected_category": selected_category, 'categories': categories})
-
+    return render(request, 'users/balance_changes.html', {
+        'page_obj': page_obj,
+        'sort_by': sort_by,
+        'filter_by': filter_by,
+        'selected_category': selected_category,
+        'categories': categories,
+        'min_amount': min_amount,
+        'max_amount': max_amount,
+        'category_filter_display': category_filter_display,
+        'amount_filter_display': amount_filter_display,
+        'data_filter_display': data_filter_display
+    })
 
 @login_required
 def clear_balance_changes(request):
     profile = request.user.profile
     BalanceChange.objects.filter(profile=profile).delete()
+    messages.success(request, "All balance change history have been cleared.")
     return redirect('users-balance_changes')
