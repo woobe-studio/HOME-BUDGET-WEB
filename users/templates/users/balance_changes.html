@@ -11,7 +11,7 @@
                     </div>
                     <form method="get" class="mb-3">
                         <div class="form-group row justify-content-center">
-                            <div class="col-auto">
+                            <div class="col-auto my-2">
                                 <select id="sort_by" name="sort_by" class="form-control">
                                     <option value="SelectSort" {% if sort_by == 'SelectSort' %}selected{% endif %}>Select Sort Option</option>
                                     <option value="AscendingCost" {% if sort_by == 'AscendingCost' %}selected{% endif %}>Ascending Cost</option>
@@ -22,7 +22,7 @@
                                     <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
                                 </select>
                             </div>
-                            <div class="col-auto">
+                            <div class="col-auto my-2">
                                 <select id="filter_by" name="filter_by" class="form-control">
                                     <option value="SelectFilter" {% if filter_by == 'SelectFilter' %}selected{% endif %}>Select Filter</option>
                                     <option value="SelectAllFilters" {% if filter_by == 'SelectAllFilters' %}selected{% endif %}>Select All Filters</option>
@@ -31,6 +31,7 @@
                                     <option value="Date" {% if filter_by == 'Date' %}selected{% endif %}>Date</option>
                                 </select>
                             </div>
+                            <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
                         </div>
                         <div id="category-filter" class="form-group" style="display: {{ category_filter_display }};">
                             <div style="flex: 1;">
@@ -52,11 +53,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="date-filter" class="form-group"  style="display: {{ data_filter_display }};">
+                        <div id="date-filter" class="form-group"  style="display: {{ date_filter_display}};">
                             <div class="form-group row">
                                 <div class="col">
                                     <select class="form-control" id="year" name="year">
-                                        <option value="">Year</option>
+                                        <option value="">Select Year</option>
                                         {% for y in years %}
                                             <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
                                         {% endfor %}
@@ -64,7 +65,7 @@
                                 </div>
                                 <div class="col">
                                     <select class="form-control" id="month" name="month">
-                                        <option value="">Month</option>
+                                        <option value="">Select Month</option>
                                         {% for m in months %}
                                             <option value="{{ m }}" {% if month == m|stringformat:"s" %}selected{% endif %}>{{ m }}</option>
                                         {% endfor %}
@@ -72,7 +73,7 @@
                                 </div>
                                 <div class="col">
                                     <select class="form-control" id="day" name="day">
-                                        <option value="">Day</option>
+                                        <option value="">Select Day</option>
                                         {% for d in days %}
                                             <option value="{{ d }}" {% if day == d|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
                                         {% endfor %}
@@ -81,7 +82,7 @@
                             </div>
                         </div>
                         <div class="col-auto text-center">
-                            <button type="submit" class="btn btn-dark">Check</button>
+                            <button type="submit" class="btn btn-dark" id="check_button">Check</button>
                         </div>
                     </form>
                     <ul class="list-group">
@@ -165,6 +166,21 @@
         if (!confirm("Do you really want to clear the balance history?")) {
             event.preventDefault();
         }
+    });
+    
+    document.getElementById("reset-button").addEventListener("click", function() {
+        document.getElementById("sort_by").selectedIndex = 0;
+        document.getElementById("filter_by").selectedIndex = 0;
+        document.getElementById("category").selectedIndex = 0;
+        document.getElementById("min_amount").value = "";
+        document.getElementById("max_amount").value = "";
+        document.getElementById("year").selectedIndex = 0;
+        document.getElementById("month").selectedIndex = 0;
+        document.getElementById("day").selectedIndex = 0;
+
+        // Trigger change event to update filter visibility
+        document.getElementById("filter_by").dispatchEvent(new Event("change"));
+        window.location.href = "{% url 'users-balance_changes' %}";
     });
 </script>
 {% endblock content %}

@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from django.core.paginator import Paginator
@@ -158,6 +159,54 @@ def clear_categories(request):
     return redirect('users-wallet')
 
 
+def is_leap_year(year):
+    return (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0)
+
+
+def get_years():
+    current_year = datetime.now().year
+    years = [str(year) for year in
+             range(current_year - 10, current_year + 1)]
+    return years
+
+
+def get_months():
+    months = {
+        'January': 1,
+        'February': 2,
+        'March': 3,
+        'April': 4,
+        'May': 5,
+        'June': 6,
+        'July': 7,
+        'August': 8,
+        'September': 9,
+        'October': 10,
+        'November': 11,
+        'December': 12
+    }
+    return months
+
+
+def get_days(year, month):
+
+    days_in_month = {
+        1: 31,
+        2: 29 if is_leap_year(year) else 28,
+        3: 31,
+        4: 30,
+        5: 31,
+        6: 30,
+        7: 31,
+        8: 31,
+        9: 30,
+        10: 31,
+        11: 30,
+        12: 31,
+    }
+    return [str(day) for day in range(1, days_in_month.get(1) + 1)]
+
+
 @login_required
 def balance_changes(request):
     profile = request.user.profile
@@ -166,6 +215,9 @@ def balance_changes(request):
     selected_category = request.GET.get('selected_category')
     min_amount = request.GET.get('min_amount')
     max_amount = request.GET.get('max_amount')
+    day = request.GET.get('day')
+    month_name = request.GET.get('month')
+    year = request.GET.get('year')
 
     try:
         min_amount = Decimal(min_amount) if min_amount else None
@@ -177,13 +229,35 @@ def balance_changes(request):
     except (InvalidOperation, ValueError):
         max_amount = None
 
+    try:
+        day = int(day) if day else None
+    except (ValueError, TypeError):
+        day = None
+
+    try:
+        month = get_months().get(month_name) if month_name else None
+    except AttributeError:
+        month = None
+
+    try:
+        year = int(year) if year else None
+    except (ValueError, TypeError):
+        year = None
+
     sorted_changes = BalanceChange.objects.filter(profile=profile)
 
-    category_filter_display = "none"
-    amount_filter_display = "none"
-    data_filter_display = "none"
-    if selected_category != "Select Category":
-        category_filter_display = "block"
+    category_filter_display = 'none'
+    amount_filter_display = 'none'
+    date_filter_display = 'none'
+    if filter_by not in ['SelectFilter', 'SelectAllFilters', None, 'None', ''] and selected_category not in ['', 'Select Category']:
+        category_filter_display = 'block'
+    else:
+        category_filter_display = 'none'
+
+    if day is not None or month_name not in [None, 'None', ''] or year is not None:
+        date_filter_display = 'block'
+    else:
+        date_filter_display = 'none'
 
     if selected_category and selected_category != "None":
         category = get_object_or_404(Category, name=selected_category)
@@ -194,6 +268,13 @@ def balance_changes(request):
     if max_amount is not None:
         sorted_changes = sorted_changes.filter(amount__lte=max_amount)
         amount_filter_display = 'block'
+
+    if year is not None:
+        sorted_changes = sorted_changes.filter(timestamp__year=year)
+    if month is not None:
+        sorted_changes = sorted_changes.filter(timestamp__month=month)
+    if day is not None:
+        sorted_changes = sorted_changes.filter(timestamp__day=day)
 
     if sort_by == 'AscendingCost':
         balance_changes = sorted_changes.order_by('amount')
@@ -215,6 +296,10 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    years = get_years()
+    months = list(get_months().keys())
+    days = get_days(datetime.now().year, month)
+
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
     return render(request, 'users/balance_changes.html', {
         'page_obj': page_obj,
@@ -226,8 +311,15 @@ def balance_changes(request):
         'max_amount': max_amount,
         'category_filter_display': category_filter_display,
         'amount_filter_display': amount_filter_display,
-        'data_filter_display': data_filter_display
+        'date_filter_display': date_filter_display,
+        'years': years,
+        'months': months,
+        'days': days,
+        'year': str(year),
+        'month': month_name,
+        'day': str(day),
     })
+
 
 @login_required
 def clear_balance_changes(request):
