@@ -341,3 +341,9 @@ def clear_balance_changes(request):
     BalanceChange.objects.filter(profile=profile).delete()
     messages.success(request, "All balance change history have been cleared.")
     return redirect('users-balance_changes')
+
+
+@login_required
+def charts(request):
+    profile = request.user.profile
+    return render(request, 'users/charts.html', {})
