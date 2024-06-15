@@ -1,132 +1,129 @@
-{% extends "users/base.html" %}
-{% block title %}Balance Changes{% endblock title %}
-{% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
-                <div class="card-body">
-                    <div class="col-md-20 text-center">
-                        <h2 class="mb-3" style="color: #bd93f9;">Balance Changes</h2>
-                    </div>
-                    <form method="get" class="mb-3">
-                        <div class="form-group row justify-content-center">
-                            <div class="col-auto my-2">
-                                <select id="sort_by" name="sort_by" class="form-control">
-                                    <option value="SelectSort" {% if sort_by == 'SelectSort' %}selected{% endif %}>Select Sort Option</option>
-                                    <option value="AscendingCost" {% if sort_by == 'AscendingCost' %}selected{% endif %}>Ascending Cost</option>
-                                    <option value="DescendingCost" {% if sort_by == 'DescendingCost' %}selected{% endif %}>Descending Cost</option>
-                                    <option value="DateOldestFirst" {% if sort_by == 'DateOldestFirst' %}selected{% endif %}>Date Oldest First</option>
-                                    <option value="DateNewestFirst" {% if sort_by == 'DateNewestFirst' %}selected{% endif %}>Date Newest First</option>
-                                    <option value="AscendingCategoryName" {% if sort_by == 'AscendingCategoryName' %}selected{% endif %}>Ascending Category Name</option>
-                                    <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
-                                </select>
-                            </div>
-                            <div class="col-auto my-2">
-                                <select id="filter_by" name="filter_by" class="form-control">
-                                    <option value="SelectFilter" {% if filter_by == 'SelectFilter' %}selected{% endif %}>Select Filter</option>
-                                    <option value="SelectAllFilters" {% if filter_by == 'SelectAllFilters' %}selected{% endif %}>Select All Filters</option>
-                                    <option value="Category" {% if filter_by == 'Category' %}selected{% endif %}>Category</option>
-                                    <option value="AmountBetween" {% if filter_by == 'AmountBetween' %}selected{% endif %}>Amount between</option>
-                                    <option value="Date" {% if filter_by == 'Date' %}selected{% endif %}>Date</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
+{% extends "users/wallet_base.html" %}
+{% block wallet_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+            <div class="card-body">
+                <div class="col-md-20 text-center">
+                    <h2 class="mb-3" style="color: #bd93f9;">Balance Changes</h2>
+                </div>
+                <form method="get" class="mb-3">
+                    <div class="form-group row justify-content-center">
+                        <div class="col-auto my-2">
+                            <select id="sort_by" name="sort_by" class="form-control">
+                                <option value="SelectSort" {% if sort_by == 'SelectSort' %}selected{% endif %}>Select Sort Option</option>
+                                <option value="AscendingCost" {% if sort_by == 'AscendingCost' %}selected{% endif %}>Ascending Cost</option>
+                                <option value="DescendingCost" {% if sort_by == 'DescendingCost' %}selected{% endif %}>Descending Cost</option>
+                                <option value="DateOldestFirst" {% if sort_by == 'DateOldestFirst' %}selected{% endif %}>Date Oldest First</option>
+                                <option value="DateNewestFirst" {% if sort_by == 'DateNewestFirst' %}selected{% endif %}>Date Newest First</option>
+                                <option value="AscendingCategoryName" {% if sort_by == 'AscendingCategoryName' %}selected{% endif %}>Ascending Category Name</option>
+                                <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
+                            </select>
                         </div>
-                        <div id="category-filter" class="form-group" style="display: {{ category_filter_display }};">
-                            <div style="flex: 1;">
-                                <select class="form-control" id="category" name="selected_category">
-                                    <option value="">Select Category</option>
-                                    {% for category in categories %}
-                                        <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                        <div class="col-auto my-2">
+                            <select id="filter_by" name="filter_by" class="form-control">
+                                <option value="SelectFilter" {% if filter_by == 'SelectFilter' %}selected{% endif %}>Select Filter</option>
+                                <option value="SelectAllFilters" {% if filter_by == 'SelectAllFilters' %}selected{% endif %}>Select All Filters</option>
+                                <option value="Category" {% if filter_by == 'Category' %}selected{% endif %}>Category</option>
+                                <option value="AmountBetween" {% if filter_by == 'AmountBetween' %}selected{% endif %}>Amount between</option>
+                                <option value="Date" {% if filter_by == 'Date' %}selected{% endif %}>Date</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
+                    </div>
+                    <div id="category-filter" class="form-group" style="display: {{ category_filter_display }};">
+                        <div style="flex: 1;">
+                            <select class="form-control" id="category" name="selected_category">
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div id="amount-filter" class="form-group"  style="display: {{ amount_filter_display }};">
+                        <div class="form-group row">
+                            <div class="col">
+                                <input type="number" class="form-control" id="min_amount" name="min_amount" placeholder="Minimum Amount" value="{% if min_amount %}{{ min_amount }}{% endif %}">
+                            </div>
+                            <div class="col">
+                                <input type="number" class="form-control" id="max_amount" name="max_amount" placeholder="Maximum Amount" value="{% if max_amount %}{{ max_amount }}{% endif %}">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="date-filter" class="form-group"  style="display: {{ date_filter_display}};">
+                        <div class="form-group row">
+                            <div class="col">
+                                <select class="form-control" id="year" name="year">
+                                    <option value="">Select Year</option>
+                                    {% for y in years %}
+                                        <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-control" id="month" name="month">
+                                    <option value="">Select Month</option>
+                                    {% for m in months %}
+                                        <option value="{{ m }}" {% if month == m|stringformat:"s" %}selected{% endif %}>{{ m }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-control" id="day" name="day">
+                                    <option value="">Select Day</option>
+                                    {% for d in days %}
+                                        <option value="{{ d }}" {% if day == d|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-control" id="day_name" name="day_name">
+                                    <option value="">Select Day Name</option>
+                                    {% for dn in day_names %}
+                                        <option value="{{ dn }}" {% if day_name == dn %}selected{% endif %}>{{ dn }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         </div>
-                        <div id="amount-filter" class="form-group"  style="display: {{ amount_filter_display }};">
-                            <div class="form-group row">
-                                <div class="col">
-                                    <input type="number" class="form-control" id="min_amount" name="min_amount" placeholder="Minimum Amount" value="{% if min_amount %}{{ min_amount }}{% endif %}">
-                                </div>
-                                <div class="col">
-                                    <input type="number" class="form-control" id="max_amount" name="max_amount" placeholder="Maximum Amount" value="{% if max_amount %}{{ max_amount }}{% endif %}">
-                                </div>
-                            </div>
-                        </div>
-                        <div id="date-filter" class="form-group"  style="display: {{ date_filter_display}};">
-                            <div class="form-group row">
-                                <div class="col">
-                                    <select class="form-control" id="year" name="year">
-                                        <option value="">Select Year</option>
-                                        {% for y in years %}
-                                            <option value="{{ y }}" {% if year == y|stringformat:"s" %}selected{% endif %}>{{ y }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="month" name="month">
-                                        <option value="">Select Month</option>
-                                        {% for m in months %}
-                                            <option value="{{ m }}" {% if month == m|stringformat:"s" %}selected{% endif %}>{{ m }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="day" name="day">
-                                        <option value="">Select Day</option>
-                                        {% for d in days %}
-                                            <option value="{{ d }}" {% if day == d|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <select class="form-control" id="day_name" name="day_name">
-                                        <option value="">Select Day Name</option>
-                                        {% for dn in day_names %}
-                                            <option value="{{ dn }}" {% if day_name == dn %}selected{% endif %}>{{ dn }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-auto text-center">
-                            <button type="submit" class="btn btn-dark" id="check_button">Check</button>
-                        </div>
+                    </div>
+                    <div class="col-auto text-center">
+                        <button type="submit" class="btn btn-dark" id="check_button">Check</button>
+                    </div>
+                </form>
+                <ul class="list-group">
+                    {% if page_obj %}
+                        {% for change in page_obj %}
+                        <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
+                            <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
+                            <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
+                            {% if change.amount > 0 %}
+                                <p>Amount: <span style="color: #41ff00;">${{ change.amount }}</span></p>
+                            {% else %}
+                                <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
+                            {% endif %}
+                            <p>Category: <span style="color: #9559ff;">{{ change.category }}</span></p>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                    <p class="text-center" style="color: #f8f8f2;">No balance changes yet.</p>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <form method="post" action="{% url 'users-clear_balance_changes' %}" id="clear-balance-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Clear Balance History</button>
                     </form>
-                    <ul class="list-group">
-                        {% if page_obj %}
-                            {% for change in page_obj %}
-                            <li class="list-group-item" style="background-color: #282a36; color: #f8f8f2;">
-                                <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
-                                <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
-                                {% if change.amount > 0 %}
-                                    <p>Amount: <span style="color: #41ff00;">${{ change.amount }}</span></p>
-                                {% else %}
-                                    <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
-                                {% endif %}
-                                <p>Category: <span style="color: #9559ff;">{{ change.category }}</span></p>
-                            </li>
-                            {% endfor %}
-                        {% else %}
-                        <p class="text-center" style="color: #f8f8f2;">No balance changes yet.</p>
+                    <div>
+                        {% if page_obj.has_previous %}
+                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Previous</a>
                         {% endif %}
-                    </ul>
-                </div>
-                <div class="card-footer">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <form method="post" action="{% url 'users-clear_balance_changes' %}" id="clear-balance-form">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Clear Balance History</button>
-                        </form>
-                        <div>
-                            {% if page_obj.has_previous %}
-                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Previous</a>
-                            {% endif %}
-                            {% if page_obj.has_next %}
-                                <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Next</a>
-                            {% endif %}
-                            <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-                        </div>
+                        {% if page_obj.has_next %}
+                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Next</a>
+                        {% endif %}
+                        <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                     </div>
                 </div>
             </div>
@@ -191,4 +188,4 @@
         window.location.href = "{% url 'users-balance_changes' %}";
     });
 </script>
-{% endblock content %}
+{% endblock wallet_content %}

@@ -1,0 +1,22 @@
+{% extends "users/base.html" %}
+{% block title %}Wallet Page{% endblock title %}
+{% block content %}
+<div class="container-fluid pl-0 pr-lg-5 my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-3">
+            <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+                <div class="card-body d-flex justify-content-center">
+                    <nav class="nav flex-column w-100">
+                        <a class="nav-item-box nav-link-spacing mb-3 text-center w-100" href="{% url 'users-balance_changes' %}" style="color: #bd93f9;">View Balance Changes</a>
+                        <a class="nav-item-box nav-link-spacing mb-3 text-center w-100" href="{% url 'users-wallet' %}" style="color: #bd93f9;">Wallet</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            {% block wallet_content %}
+            {% endblock wallet_content %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

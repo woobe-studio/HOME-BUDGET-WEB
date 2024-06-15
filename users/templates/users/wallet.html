@@ -1,54 +1,40 @@
-{% extends "users/base.html" %}
-{% block title %}Wallet Page{% endblock title %}
-{% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
-            <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
-                <div class="card-body">
-                    <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
-                    <p class="text-center mb-4"> Current Balance: <span style="color: #41ff00;">${{ balance }}</span></p>
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="amount" style="color: #f8f8f2;">Amount</label>
-                            <input type="number" class="form-control" id="amount" name="amount" step="0.01" style="background-color: #282a36; color: #f8f8f2;" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="description" style="color: #f8f8f2;">Description</label>
-                            <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;">
-                        </div>
-                        <div class="form-group d-flex align-items-end">
-                            <div style="flex: 1;">
-                                <label for="category" style="color: #f8f8f2;">Category</label>
-                                <select class="form-control" id="category" name="category">
-                                    <option value="">Select Category</option>
-                                    {% for category in categories %}
-                                        <option value="{{ category.id }}">{{ category.name }}</option>
-                                    {% endfor %}
-                                    <option value="new_category">Add New Category</option>
-                                </select>
-                            </div>
-                            <button type="button" class="btn btn-danger ml-2 " name="action" value="clear-categories" id="clear-categories-form">Clear Categories</button>
-                        </div>
-
-                        <div id="new-category-field" class="form-group" style="display: none;">
-                            <label for="new_category" style="color: #f8f8f2;">New Category</label>
-                            <input type="text" class="form-control" id="new_category" name="new_category" style="background-color: #282a36; color: #f8f8f2;">
-                        </div>
-                        <button type="submit" class="btn btn-dark btn-block" name="action" value="update_funds">Update Funds</button>
-                    </form>
-                </div>
+{% extends "users/wallet_base.html" %}
+{% block wallet_content %}
+<div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+    <div class="card-body">
+        <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
+        <p class="text-center mb-4"> Current Balance: <span style="color: #41ff00;">${{ balance }}</span></p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="amount" style="color: #f8f8f2;">Amount</label>
+                <input type="number" class="form-control" id="amount" name="amount" step="0.01" style="background-color: #282a36; color: #f8f8f2;" required>
             </div>
-        </div>
+            <div class="form-group">
+                <label for="description" style="color: #f8f8f2;">Description</label>
+                <input type="text" class="form-control" id="description" name="description" style="background-color: #282a36; color: #f8f8f2;">
+            </div>
+            <div class="form-group d-flex align-items-end">
+                <div style="flex: 1;">
+                    <label for="category" style="color: #f8f8f2;">Category</label>
+                    <select class="form-control" id="category" name="category">
+                        <option value="">Select Category</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                        <option value="new_category">Add New Category</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-danger ml-2" name="action" value="clear-categories" id="clear-categories-form">Clear Categories</button>
+            </div>
+
+            <div id="new-category-field" class="form-group" style="display: none;">
+                <label for="new_category" style="color: #f8f8f2;">New Category</label>
+                <input type="text" class="form-control" id="new_category" name="new_category" style="background-color: #282a36; color: #f8f8f2;">
+            </div>
+            <button type="submit" class="btn btn-dark btn-block" name="action" value="update_funds">Update Funds</button>
+        </form>
     </div>
-</div>
-<div class="container my-5">
-<div class="row justify-content-center">
-    <div class="col-lg-8 text-center">
-        <a href="{% url 'users-balance_changes' %}" class="btn btn-dark">View Balance Changes</a>
-    </div>
-</div>
 </div>
 <script>
     document.getElementById("category").addEventListener("change", function() {
@@ -60,10 +46,10 @@
         }
     });
 
-document.getElementById("clear-categories-form").addEventListener("click", function() {
-    if (confirm("Are you sure you want to clear all categories?")) {
-        window.location.href = "{% url 'users-clear_categories' %}";
-    }
-});
+    document.getElementById("clear-categories-form").addEventListener("click", function() {
+        if (confirm("Are you sure you want to clear all categories?")) {
+            window.location.href = "{% url 'users-clear_categories' %}";
+        }
+    });
 </script>
-{% endblock content %}
+{% endblock wallet_content %}
