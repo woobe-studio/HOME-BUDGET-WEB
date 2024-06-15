@@ -206,6 +206,9 @@ def get_days(year, month):
     }
     return [str(day) for day in range(1, days_in_month.get(1) + 1)]
 
+def get_day_names():
+    day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    return day_names
 
 @login_required
 def balance_changes(request):
@@ -216,6 +219,7 @@ def balance_changes(request):
     min_amount = request.GET.get('min_amount')
     max_amount = request.GET.get('max_amount')
     day = request.GET.get('day')
+    day_name = request.GET.get('day_name')
     month_name = request.GET.get('month')
     year = request.GET.get('year')
 
@@ -243,6 +247,16 @@ def balance_changes(request):
         year = int(year) if year else None
     except (ValueError, TypeError):
         year = None
+
+    years = get_years()
+    months = list(get_months().keys())
+    days = get_days(datetime.now().year, month)
+    day_names = get_day_names()
+
+    try:
+        day_name_week = (day_names.index(day_name) + 2 ) % 7
+    except ValueError:
+        day_name_week = None
 
     sorted_changes = BalanceChange.objects.filter(profile=profile)
 
@@ -273,6 +287,8 @@ def balance_changes(request):
         sorted_changes = sorted_changes.filter(timestamp__year=year)
     if month is not None:
         sorted_changes = sorted_changes.filter(timestamp__month=month)
+    if day_name_week is not None:
+        sorted_changes = sorted_changes.filter(timestamp__week_day=day_name_week)
     if day is not None:
         sorted_changes = sorted_changes.filter(timestamp__day=day)
 
@@ -296,10 +312,6 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    years = get_years()
-    months = list(get_months().keys())
-    days = get_days(datetime.now().year, month)
-
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
     return render(request, 'users/balance_changes.html', {
         'page_obj': page_obj,
@@ -315,9 +327,11 @@ def balance_changes(request):
         'years': years,
         'months': months,
         'days': days,
+        'day_names': day_names,
         'year': str(year),
         'month': month_name,
         'day': str(day),
+        'day_name': day_name,
     })
 
 

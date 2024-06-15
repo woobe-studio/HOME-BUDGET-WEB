@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
             <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
                 <div class="card-body">
                     <div class="col-md-20 text-center">
@@ -76,6 +76,14 @@
                                         <option value="">Select Day</option>
                                         {% for d in days %}
                                             <option value="{{ d }}" {% if day == d|stringformat:"s" %}selected{% endif %}>{{ d }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <select class="form-control" id="day_name" name="day_name">
+                                        <option value="">Select Day Name</option>
+                                        {% for dn in day_names %}
+                                            <option value="{{ dn }}" {% if day_name == dn %}selected{% endif %}>{{ dn }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -167,7 +175,7 @@
             event.preventDefault();
         }
     });
-    
+
     document.getElementById("reset-button").addEventListener("click", function() {
         document.getElementById("sort_by").selectedIndex = 0;
         document.getElementById("filter_by").selectedIndex = 0;
