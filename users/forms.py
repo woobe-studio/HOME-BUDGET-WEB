@@ -98,12 +98,11 @@ class WalletForm(forms.Form):
         description = cleaned_data.get("description")
         new_category = cleaned_data.get("new_category")
 
-        if new_category and not category:
-            del self.errors['category']
+        if new_category and not category or 'categpry' in self.errors:
+            self.errors.clear()
         if not description:
             if amount >= 0:
                 cleaned_data["description"] = "Income"
             else:
                 cleaned_data["description"] = "Expense"
-        print(cleaned_data)
         return cleaned_data

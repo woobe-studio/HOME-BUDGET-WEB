@@ -42,7 +42,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="date-filter" class="form-group"  style="display: {{ date_filter_display}};">
+                    <div id="date-filter" class="form-group"  style="display: {{ date_filter_display }};">
                         <div class="form-group row">
                             <div class="col">
                                 <select class="form-control" id="year" name="year">
@@ -94,6 +94,7 @@
                                 <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
                             {% endif %}
                             <p>Category: <span style="color: #9559ff;">{{ change.category }}</span></p>
+                            <button type="button" class="btn btn-primary edit-button" data-id="{{ change.id }}" data-description="{{ change.description }}" data-amount="{{ change.amount }}" data-category="{{ change.category }}" data-toggle="modal" data-target="#editModal">Edit</button>
                         </li>
                         {% endfor %}
                     {% else %}
@@ -121,6 +122,44 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="background-color: #44475a;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel" style="color: #bd93f9;">Edit Balance Change</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true" style="color: #f8f8f2;">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm" method="post" action="{% url 'users-edit_balance_changes' %}">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit-id" name="edit-id">
+                    <div class="form-group">
+                        <label for="edit-description" style="color: #f8f8f2;">Description</label>
+                        <input type="text" class="form-control" id="edit-description" name="edit-description">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-amount" style="color: #f8f8f2;">Amount</label>
+                        <input type="number" class="form-control" id="edit-amount" name="edit-amount" readonly style="background-color: #44475a; color: #f8f8f2; border: 1px solid #bd93f9;">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-category" style="color: #f8f8f2;">Category</label>
+                        <select class="form-control" id="edit-category" name="edit-category">
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.getElementById("clear-balance-form").addEventListener("submit", function(event) {
         if (!confirm("Do you really want to clear the balance history?")) {
@@ -137,8 +176,17 @@
         document.getElementById("month").selectedIndex = 0;
         document.getElementById("day").selectedIndex = 0;
         document.getElementById("day_name").selectedIndex = 0;
-        
+
         window.location.href = "{% url 'users-balance_changes' %}";
+    });
+
+    document.querySelectorAll('.edit-button').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('edit-id').value = this.getAttribute('data-id');
+            document.getElementById('edit-description').value = this.getAttribute('data-description');
+            document.getElementById('edit-amount').value = this.getAttribute('data-amount');
+            document.getElementById('edit-category').value = this.getAttribute('data-category');
+        });
     });
 </script>
 {% endblock wallet_content %}

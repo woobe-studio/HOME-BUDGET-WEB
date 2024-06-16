@@ -105,7 +105,6 @@ def clear_categories(request):
 def balance_changes(request):
     profile = request.user.profile
     sort_by = request.GET.get('sort_by')
-    filter_by = request.GET.get('filter_by')
     selected_category = request.GET.get('selected_category')
     min_amount = request.GET.get('min_amount')
     max_amount = request.GET.get('max_amount')
@@ -220,6 +219,32 @@ def clear_balance_changes(request):
     messages.success(request, "All balance change history have been cleared.")
     return redirect('users-balance_changes')
 
+@login_required
+def edit_balance_changes(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        print(request.POST.dict())
+        edit_id = request.POST.get('edit-id')
+        edit_description = request.POST.get('edit-description')
+        edit_category = request.POST.get('edit-category')
+        try:
+            balance_change = BalanceChange.objects.get(id=edit_id, profile=profile)
+            if edit_description:
+                balance_change.description = edit_description
+            if edit_category:
+                category = Category.objects.get(name=edit_category)
+                balance_change.category = category
+
+            balance_change.save()
+            messages.success(request, "Balance Change has been edited successfully.")
+        except BalanceChange.DoesNotExist:
+            messages.error(request, "Balance Change not found.")
+        except Category.DoesNotExist:
+            messages.error(request, "Category not found.")
+        except InvalidOperation:
+            messages.error(request, "Invalid amount entered.")
+
+        return redirect('users-balance_changes')
 
 @login_required
 def charts(request):
