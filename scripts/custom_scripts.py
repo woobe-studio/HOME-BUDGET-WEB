@@ -48,6 +48,7 @@ def get_days(year, month):
     }
     return [str(day) for day in range(1, days_in_month.get(1) + 1)]
 
+
 def get_day_names():
     day_names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     return day_names
