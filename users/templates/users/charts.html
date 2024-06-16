@@ -2,7 +2,18 @@
 {% block wallet_content %}
 <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
     <div class="card-body">
-        <canvas id="monthlyChart" width="400" height="200"></canvas>
+        <div class="form-group mb-3">
+            <label for="chartTypeSelect" class="form-label" style="color: #f8f8f2;">Select Chart Type:</label>
+            <select id="chartTypeSelect" class="form-select" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
+                <option value="bar">Bar Chart</option>
+                <option value="line">Line Chart</option>
+                <!-- Removed radar chart option -->
+                <option value="pie">Pie Chart</option>
+            </select>
+        </div>
+        {% if chartType != 'pie' %} <!-- Adjusted condition -->
+            <canvas id="monthlyChart" width="400" height="200"></canvas>
+        {% endif %}
     </div>
 </div>
 
@@ -10,11 +21,12 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var ctx = document.getElementById('monthlyChart').getContext('2d');
-
         var data = {{ data|safe }};
+        var currentType = 'bar';
+        var myChart;
 
-        var myChart = new Chart(ctx, {
-            type: 'bar',
+        var chartConfig = {
+            type: currentType,
             data: {
                 labels: data.months,
                 datasets: [
@@ -30,18 +42,105 @@
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',
                         borderWidth: 1,
-                        data: data.expense_data
+                        data: data.expense_data.map(value => -Math.abs(value))
                     }
                 ]
             },
             options: {
                 scales: {
-                    yAxes: [{
-                        ticks: {
-                            beginAtZero: true
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            display: true,
+                            zeroLineColor: 'rgba(255,255,255,0.6)'
                         }
-                    }]
+                    }
                 }
+            }
+        };
+
+        myChart = new Chart(ctx, chartConfig);
+
+        document.getElementById('chartTypeSelect').addEventListener('change', function () {
+            currentType = this.value;
+            chartConfig.type = currentType;
+            myChart.destroy(); // Destroy the existing chart
+            if (currentType !== 'pie') {
+                myChart = new Chart(ctx, chartConfig);
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.months,
+                        datasets: [{
+                            label: 'Monthly Data',
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(54, 162, 235, 0.2)',
+                                'rgba(255, 206, 86, 0.2)',
+                                'rgba(75, 192, 192, 0.2)',
+                                'rgba(153, 102, 255, 0.2)',
+                                'rgba(255, 159, 64, 0.2)',
+                                'rgba(255, 99, 132, 0.4)',
+                                'rgba(54, 162, 235, 0.4)',
+                                'rgba(255, 206, 86, 0.4)',
+                                'rgba(75, 192, 192, 0.4)',
+                                'rgba(153, 102, 255, 0.4)',
+                                'rgba(255, 159, 64, 0.4)',
+                                'rgba(255, 99, 132, 0.6)',
+                                'rgba(54, 162, 235, 0.6)',
+                                'rgba(255, 206, 86, 0.6)',
+                                'rgba(75, 192, 192, 0.6)',
+                                'rgba(153, 102, 255, 0.6)',
+                                'rgba(255, 159, 64, 0.6)',
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 206, 86, 0.8)',
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)',
+                                'rgba(255, 159, 64, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(153, 102, 255, 1)',
+                                'rgba(255, 159, 64, 1)',
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1,
+                            data: data.income_data.concat(data.expense_data)
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
             }
         });
     });
