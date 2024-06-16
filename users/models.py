@@ -1,4 +1,6 @@
+
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import User
 from PIL import Image
 from decimal import Decimal
@@ -57,7 +59,7 @@ class BalanceChange(models.Model):
     description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     category_name = models.CharField(max_length=255, blank=True, editable=False)
-    timestamp = models.DateTimeField(editable=True)
+    timestamp = models.DateTimeField(default=timezone.now, editable=True)
 
     def save(self, *args, **kwargs):
         if self.category:

@@ -151,30 +151,16 @@ def balance_changes(request):
 
     sorted_changes = BalanceChange.objects.filter(profile=profile)
 
-    category_filter_display = 'none'
-    amount_filter_display = 'none'
-    date_filter_display = 'none'
-    if filter_by not in ['SelectFilter', 'SelectAllFilters', None, 'None', ''] and selected_category not in ['', 'Select Category']:
-        category_filter_display = 'block'
-    else:
-        category_filter_display = 'none'
-        filter_by = 'SelectFilter'
-
-    if day is not None or month_name not in [None, 'None', ''] or year is not None or day_name_week not in [None, 'None', '']:
-        date_filter_display = 'block'
-    else:
-        date_filter_display = 'none'
-        filter_by = 'SelectFilter'
-
+    category_filter_display = 'block'
+    amount_filter_display = 'block'
+    date_filter_display = 'block'
     if selected_category and selected_category != "None":
         category = get_object_or_404(Category, name=selected_category)
         sorted_changes = sorted_changes.filter(category=category)
     if min_amount is not None:
         sorted_changes = sorted_changes.filter(amount__gte=min_amount)
-        amount_filter_display = 'block'
     if max_amount is not None:
         sorted_changes = sorted_changes.filter(amount__lte=max_amount)
-        amount_filter_display = 'block'
 
     if year is not None:
         sorted_changes = sorted_changes.filter(timestamp__year=year)
@@ -209,7 +195,6 @@ def balance_changes(request):
     return render(request, 'users/balance_changes.html', {
         'page_obj': page_obj,
         'sort_by': sort_by,
-        'filter_by': filter_by,
         'selected_category': selected_category,
         'categories': categories,
         'min_amount': min_amount,

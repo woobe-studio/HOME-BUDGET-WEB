@@ -20,15 +20,6 @@
                                 <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
                             </select>
                         </div>
-                        <div class="col-auto my-2">
-                            <select id="filter_by" name="filter_by" class="form-control">
-                                <option value="SelectFilter" {% if filter_by == 'SelectFilter' %}selected{% endif %}>Select Filter</option>
-                                <option value="SelectAllFilters" {% if filter_by == 'SelectAllFilters' %}selected{% endif %}>Select All Filters</option>
-                                <option value="Category" {% if filter_by == 'Category' %}selected{% endif %}>Category</option>
-                                <option value="AmountBetween" {% if filter_by == 'AmountBetween' %}selected{% endif %}>Amount between</option>
-                                <option value="Date" {% if filter_by == 'Date' %}selected{% endif %}>Date</option>
-                            </select>
-                        </div>
                         <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
                     </div>
                     <div id="category-filter" class="form-group" style="display: {{ category_filter_display }};">
@@ -118,10 +109,10 @@
                     </form>
                     <div>
                         {% if page_obj.has_previous %}
-                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Previous</a>
+                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.previous_page_number }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Previous</a>
                         {% endif %}
                         {% if page_obj.has_next %}
-                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}&filter_by={{ filter_by }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Next</a>
+                            <a href="?sort_by={{ sort_by }}&page={{ page_obj.next_page_number }}&selected_category={{ selected_category }}&min_amount={{ min_amount }}&max_amount={{ max_amount }}&year={{ year }}&month={{ month }}&day={{ day }}" class="btn btn-dark">Next</a>
                         {% endif %}
                         <span class="text-muted mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
                     </div>
@@ -131,42 +122,6 @@
     </div>
 </div>
 <script>
-    document.getElementById("filter_by").addEventListener("change", function() {
-        let categorySelection = document.getElementById("category-filter");
-        let amountSelection = document.getElementById("amount-filter");
-        let dateSelection = document.getElementById("date-filter");
-
-        if (this.value === "Category") {
-            categorySelection.style.display = "block";
-            amountSelection.style.display = "none";
-            if (dateSelection.style.display === 'block')
-                dateSelection.style.display = "none";
-        } else if (this.value === "AmountBetween") {
-            if (categorySelection.style.display === 'block')
-                categorySelection.style.display = "block";
-            amountSelection.style.display = "block";
-            if (dateSelection.style.display === 'block')
-                dateSelection.style.display = "none";
-        } else if (this.value === "Date") {
-            if (categorySelection.style.display === 'block')
-                categorySelection.style.display = "block";
-            if (amountSelection.style.display === 'block')
-                amountSelection.style.display = "block";
-            dateSelection.style.display = "block";
-        } else if (this.value === "SelectFilter") {
-            categorySelection.style.display = "none";
-            amountSelection.style.display = "none";
-            dateSelection.style.display = "none";
-        } else if(this.value === 'SelectAllFilters') {
-            categorySelection.style.display = "block";
-            amountSelection.style.display = "block";
-            dateSelection.style.display = "block";
-        } else {
-            categorySelection.style.display = "none";
-            amountSelection.style.display = "none";
-            dateSelection.style.display = "none";
-        }
-    });
     document.getElementById("clear-balance-form").addEventListener("submit", function(event) {
         if (!confirm("Do you really want to clear the balance history?")) {
             event.preventDefault();
@@ -175,7 +130,6 @@
 
     document.getElementById("reset-button").addEventListener("click", function() {
         document.getElementById("sort_by").selectedIndex = 0;
-        document.getElementById("filter_by").selectedIndex = 0;
         document.getElementById("category").selectedIndex = 0;
         document.getElementById("min_amount").value = "";
         document.getElementById("max_amount").value = "";
@@ -183,9 +137,7 @@
         document.getElementById("month").selectedIndex = 0;
         document.getElementById("day").selectedIndex = 0;
         document.getElementById("day_name").selectedIndex = 0;
-
-        // Trigger change event to update filter visibility
-        document.getElementById("filter_by").dispatchEvent(new Event("change"));
+        
         window.location.href = "{% url 'users-balance_changes' %}";
     });
 </script>
