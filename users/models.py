@@ -57,7 +57,7 @@ class BalanceChange(models.Model):
     description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     category_name = models.CharField(max_length=255, blank=True, editable=False)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(editable=True)
 
     def save(self, *args, **kwargs):
         if self.category:
