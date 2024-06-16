@@ -1,3 +1,9 @@
+import json
+
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Sum
+from django.db.models.functions import ExtractMonth
+
 from scripts.custom_scripts import *
 from scripts.custom_classes import *
 
@@ -233,4 +239,34 @@ def clear_balance_changes(request):
 @login_required
 def charts(request):
     profile = request.user.profile
-    return render(request, 'users/charts.html', {})
+
+    # Retrieve all balance changes for the user profile
+    balance_changes = BalanceChange.objects.filter(profile=profile)
+
+    # Initialize income and expense data arrays
+    income_data = [0] * 12
+    expense_data = [0] * 12
+
+    # Populate income and expense data arrays for each balance change
+    for change in balance_changes:
+        month_index = change.timestamp.month - 1
+        if change.amount > 0:
+            income_data[month_index] += change.amount
+        else:
+            expense_data[month_index] += abs(change.amount)
+
+    # Prepare data to be passed to the template
+    months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+    ]
+
+    data = {
+        'months': months,
+        'income_data': income_data,
+        'expense_data': expense_data,
+    }
+
+    serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
+
+    return render(request, 'users/charts.html', {'data': serialized_data})

@@ -1,6 +1,49 @@
 {% extends "users/wallet_base.html" %}
 {% block wallet_content %}
-<script>
+<div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
+    <div class="card-body">
+        <canvas id="monthlyChart" width="400" height="200"></canvas>
+    </div>
+</div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var ctx = document.getElementById('monthlyChart').getContext('2d');
+
+        var data = {{ data|safe }};
+
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.months,
+                datasets: [
+                    {
+                        label: 'Monthly Income',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        data: data.income_data
+                    },
+                    {
+                        label: 'Monthly Expense',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        data: data.expense_data
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    });
 </script>
 {% endblock wallet_content %}
