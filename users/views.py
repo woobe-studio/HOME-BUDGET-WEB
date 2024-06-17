@@ -220,10 +220,9 @@ def clear_balance_changes(request):
     return redirect('users-balance_changes')
 
 @login_required
-def edit_balance_changes(request):
+def edit_balance_change(request):
     profile = request.user.profile
     if request.method == 'POST':
-        print(request.POST.dict())
         edit_id = request.POST.get('edit-id')
         edit_description = request.POST.get('edit-description')
         edit_category = request.POST.get('edit-category')
@@ -245,6 +244,25 @@ def edit_balance_changes(request):
             messages.error(request, "Invalid amount entered.")
 
         return redirect('users-balance_changes')
+
+
+@login_required
+def delete_balance_change(request):
+    profile = request.user.profile
+    if request.method == 'POST':
+        delete_id = request.POST.get('delete-id')
+        try:
+            balance_change = BalanceChange.objects.get(id=delete_id, profile=profile)
+            deleted_amount = balance_change.amount
+            balance_change.delete()
+            profile.balance += deleted_amount
+            profile.save()
+            messages.success(request, "Balance Change has been deleted successfully.")
+        except BalanceChange.DoesNotExist:
+            messages.error(request, "Balance Change not found.")
+
+        return redirect('users-balance_changes')
+
 
 @login_required
 def charts(request):
