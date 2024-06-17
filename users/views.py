@@ -1,8 +1,11 @@
+import csv
 import json
 
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Sum
-from django.db.models.functions import ExtractMonth
+from django.http import HttpResponse
 
 from scripts.custom_scripts import *
 from scripts.custom_classes import *
@@ -262,6 +265,97 @@ def delete_balance_change(request):
             messages.error(request, "Balance Change not found.")
 
         return redirect('users-balance_changes')
+
+
+@login_required
+def export_balance_changes(request):
+    profile = request.user.profile
+    balance_changes = BalanceChange.objects.filter(profile=profile)
+
+    if request.method == 'POST':
+        export_format = request.POST.get('export_format', 'pdf')
+        sort_by = request.POST.get('sort_by', None)
+        selected_category = request.POST.get('selected_category', None)
+        min_amount = request.POST.get('min_amount', None)
+        max_amount = request.POST.get('max_amount', None)
+        year = request.POST.get('year', None)
+        month = request.POST.get('month', None)
+        day = request.POST.get('day', None)
+        day_name = request.POST.get('day_name', None)
+
+        day_names = get_day_names()
+        try:
+            day_name_week = (day_names.index(day_name) + 2) % 7
+        except ValueError:
+            day_name_week = None
+
+        if selected_category:
+            balance_changes = balance_changes.filter(category__name=selected_category)
+        if min_amount:
+            balance_changes = balance_changes.filter(amount__gte=min_amount)
+        if max_amount:
+            balance_changes = balance_changes.filter(amount__lte=max_amount)
+        if year:
+            balance_changes = balance_changes.filter(timestamp__year=year)
+        if month:
+            balance_changes = balance_changes.filter(timestamp__month=month)
+        if day:
+            balance_changes = balance_changes.filter(timestamp__day=day)
+        if day_name:
+            balance_changes = balance_changes.filter(timestamp__week_day=day_name_week)
+
+        if export_format == 'pdf':
+            pdf_filename = "balance_changes_report.pdf"
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
+
+            doc = SimpleDocTemplate(response, pagesize=letter)
+            table_data = [['Time', 'Description', 'Amount', 'Category']]
+
+            for change in balance_changes:
+                table_data.append([
+                    change.timestamp.strftime("%b %d, %Y %I:%M %p"),
+                    change.description,
+                    "${:.2f}".format(change.amount),
+                    change.category.name
+                ])
+
+            table = Table(table_data)
+
+            style = TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ])
+
+            table.setStyle(style)
+            doc.build([table])
+
+            return response
+
+        elif export_format == 'csv':
+            csv_filename = "balance_changes_report.csv"
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="{csv_filename}"'
+
+            writer = csv.writer(response)
+            writer.writerow(['Time', 'Description', 'Amount', 'Category'])
+
+            for change in balance_changes:
+                writer.writerow([
+                    change.timestamp.strftime("%b %d, %Y %I:%M %p"),
+                    change.description,
+                    "${:.2f}".format(change.amount),
+                    change.category.name
+                ])
+
+            return response
+
+    return redirect('users-balance_changes')
 
 
 @login_required

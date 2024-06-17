@@ -20,7 +20,11 @@
                                 <option value="DescendingCategoryName" {% if sort_by == 'DescendingCategoryName' %}selected{% endif %}>Descending Category Name</option>
                             </select>
                         </div>
-                        <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <button type="button" class="btn btn-danger my-2" id="reset-button">Reset</button>
+                            </div>
+                        </div>
                     </div>
                     <div id="category-filter" class="form-group" style="display: {{ category_filter_display }};">
                         <div style="flex: 1;">
@@ -80,6 +84,17 @@
                     </div>
                     <div class="col-auto text-center">
                         <button type="submit" class="btn btn-dark" id="check_button">Check</button>
+                        <div class="form-group row justify-content-center">
+                            <div class="col-auto my-2">
+                                <select id="export_format" name="export_format" class="form-control">
+                                    <option value="pdf">PDF</option>
+                                    <option value="csv">Excel CSV</option>
+                                </select>
+                            </div>
+                            <div class="col-auto my-2">
+                                <button type="button" class="btn btn-success" id="export_button">Export</button>
+                            </div>
+                        </div>
                     </div>
                 </form>
                 <ul class="list-group">
@@ -184,38 +199,115 @@
 </div>
 
 <script>
-    document.getElementById("clear-balance-form").addEventListener("submit", function(event) {
-        if (!confirm("Do you really want to clear the balance history?")) {
-            event.preventDefault();
-        }
-    });
+document.getElementById("clear-balance-form").addEventListener("submit", function(event) {
+    if (!confirm("Do you really want to clear the balance history?")) {
+        event.preventDefault();
+    }
+});
 
-    document.getElementById("reset-button").addEventListener("click", function() {
-        document.getElementById("sort_by").selectedIndex = 0;
-        document.getElementById("category").selectedIndex = 0;
-        document.getElementById("min_amount").value = "";
-        document.getElementById("max_amount").value = "";
-        document.getElementById("year").selectedIndex = 0;
-        document.getElementById("month").selectedIndex = 0;
-        document.getElementById("day").selectedIndex = 0;
-        document.getElementById("day_name").selectedIndex = 0;
+document.getElementById("reset-button").addEventListener("click", function() {
+    document.getElementById("sort_by").selectedIndex = 0;
+    document.getElementById("category").selectedIndex = 0;
+    document.getElementById("min_amount").value = "";
+    document.getElementById("max_amount").value = "";
+    document.getElementById("year").selectedIndex = 0;
+    document.getElementById("month").selectedIndex = 0;
+    document.getElementById("day").selectedIndex = 0;
+    document.getElementById("day_name").selectedIndex = 0;
 
-        window.location.href = "{% url 'users-balance_changes' %}";
-    });
+    window.location.href = "{% url 'users-balance_changes' %}";
+});
 
-    document.querySelectorAll('.edit-button').forEach(button => {
-        button.addEventListener('click', function() {
-            document.getElementById('edit-id').value = this.getAttribute('data-id');
-            document.getElementById('edit-description').value = this.getAttribute('data-description');
-            document.getElementById('edit-amount').value = this.getAttribute('data-amount');
-            document.getElementById('edit-category').value = this.getAttribute('data-category');
-        });
+document.querySelectorAll('.edit-button').forEach(button => {
+    button.addEventListener('click', function() {
+        document.getElementById('edit-id').value = this.getAttribute('data-id');
+        document.getElementById('edit-description').value = this.getAttribute('data-description');
+        document.getElementById('edit-amount').value = this.getAttribute('data-amount');
+        document.getElementById('edit-category').value = this.getAttribute('data-category');
     });
+});
 
-    document.querySelectorAll('.delete-button').forEach(button => {
-        button.addEventListener('click', function() {
-            document.getElementById('delete-id').value = this.getAttribute('data-id');
-        });
+document.querySelectorAll('.delete-button').forEach(button => {
+    button.addEventListener('click', function() {
+        document.getElementById('delete-id').value = this.getAttribute('data-id');
     });
+});
+document.getElementById("export_button").addEventListener("click", function() {
+    var selectedFormat = document.getElementById("export_format").value;
+    var selectedCategory = document.getElementById("category").value;
+    var minAmount = document.getElementById("min_amount").value;
+    var maxAmount = document.getElementById("max_amount").value;
+    var year = document.getElementById("year").value;
+    var month = document.getElementById("month").value;
+    var day = document.getElementById("day").value;
+    var dayName = document.getElementById("day_name").value;
+    
+    // Create a form element
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = "{% url 'users-export_balance_changes' %}";
+
+    // Create a CSRF token input field
+    var csrfToken = document.createElement('input');
+    csrfToken.type = 'hidden';
+    csrfToken.name = 'csrfmiddlewaretoken';
+    csrfToken.value = '{{ csrf_token }}'; // Add the CSRF token value here
+    form.appendChild(csrfToken);
+
+    // Create hidden input fields for additional data
+    var selectedCategoryField = document.createElement('input');
+    selectedCategoryField.type = 'hidden';
+    selectedCategoryField.name = 'selected_category';
+    selectedCategoryField.value = selectedCategory;
+    form.appendChild(selectedCategoryField);
+
+    var minAmountField = document.createElement('input');
+    minAmountField.type = 'hidden';
+    minAmountField.name = 'min_amount';
+    minAmountField.value = minAmount;
+    form.appendChild(minAmountField);
+
+    var maxAmountField = document.createElement('input');
+    maxAmountField.type = 'hidden';
+    maxAmountField.name = 'max_amount';
+    maxAmountField.value = maxAmount;
+    form.appendChild(maxAmountField);
+
+    var yearField = document.createElement('input');
+    yearField.type = 'hidden';
+    yearField.name = 'year';
+    yearField.value = year;
+    form.appendChild(yearField);
+
+    var monthField = document.createElement('input');
+    monthField.type = 'hidden';
+    monthField.name = 'month';
+    monthField.value = month;
+    form.appendChild(monthField);
+
+    var dayField = document.createElement('input');
+    dayField.type = 'hidden';
+    dayField.name = 'day';
+    dayField.value = day;
+    form.appendChild(dayField);
+
+    var dayNameField = document.createElement('input');
+    dayNameField.type = 'hidden';
+    dayNameField.name = 'day_name';
+    dayNameField.value = dayName;
+    form.appendChild(dayNameField);
+
+    // Create a hidden input field to store the selected format
+    var hiddenField = document.createElement('input');
+    hiddenField.type = 'hidden';
+    hiddenField.name = 'export_format';
+    hiddenField.value = selectedFormat;
+    form.appendChild(hiddenField);
+
+    // Append the form to the document body and submit it
+    document.body.appendChild(form);
+    form.submit();
+});
+
 </script>
 {% endblock wallet_content %}
