@@ -87,8 +87,9 @@ def wallet(request):
             messages.success(request, 'Categories cleared successfully')
             return redirect('users-wallet')
     formatted_balance = f'{profile.balance:.2f}'
+    currency = profile.currency
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'categories': categories})
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'currency' : currency, 'categories': categories})
 
 
 @login_required
@@ -193,12 +194,14 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    currency = profile.currency
     categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
     return render(request, 'users/balance_changes.html', {
         'page_obj': page_obj,
         'sort_by': sort_by,
         'selected_category': selected_category,
         'categories': categories,
+        'currency': currency,
         'min_amount': min_amount,
         'max_amount': max_amount,
         'category_filter_display': category_filter_display,

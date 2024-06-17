@@ -11,6 +11,7 @@ class Profile(models.Model):
     avatar = models.ImageField(default='default.jpg', upload_to='profile_images')
     bio = models.TextField(null=True, blank=True, default='')
     balance = models.DecimalField(default=Decimal('0.00'), max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default='USD')
     categories = models.ManyToManyField('Category', blank=True)
 
     def __str__(self):
@@ -35,15 +36,6 @@ class Profile(models.Model):
             else:
                 return
         BalanceChange.objects.create(profile=self, amount=self.balance, description=description)
-
-
-class Budget(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.user.username}'s Budget"
 
 
 class Category(models.Model):

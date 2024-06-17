@@ -104,9 +104,9 @@
                             <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
                             <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
                             {% if change.amount > 0 %}
-                                <p>Amount: <span style="color: #41ff00;">${{ change.amount }}</span></p>
+                                <p>Amount: <span style='color:#41ff00'>{{ change.amount }}</span> <span style="color: #ff006a;">{{ currency }}</span></p>
                             {% else %}
-                                <p>Amount: <span style="color: #ff0000;">${{ change.amount }}</span></p>
+                                <p>Amount: <span style='color:#41ff00'>{{ change.amount }}</span> <span style="color: #ff006a;">{{ currency }}</span></p>
                             {% endif %}
                             <p>Category: <span style="color: #9559ff;">{{ change.category }}</span></p>
                             <button type="button" class="btn btn-primary edit-button" data-id="{{ change.id }}" data-description="{{ change.description }}" data-amount="{{ change.amount }}" data-category="{{ change.category }}" data-toggle="modal" data-target="#editModal">Edit</button>

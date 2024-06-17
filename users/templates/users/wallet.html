@@ -3,7 +3,7 @@
 <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
     <div class="card-body">
         <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
-        <p class="text-center mb-4"> Current Balance: <span style="color: #41ff00;">${{ balance }}</span></p>
+        <p class="text-center mb-4"> Current Balance: <span style='color:#41ff00'>{{ balance }}</span> <span style="color: #ff006a;">{{ currency }}</span></p>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
