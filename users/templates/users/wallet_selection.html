@@ -6,7 +6,7 @@
     <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
         <div class="card-body">
             <h2 class="card-title mb-4">Create New Wallet</h2>
-            <form method="post" action="{% url 'users-create_wallet' %}" id="create-wallet">
+            <form method="post" action="{% url 'users-create_wallet' %}" id="create-wallet" >
                 {% csrf_token %}
                 <div class="form-group">
                     <label for="wallet_name">Wallet Name</label>
@@ -19,6 +19,13 @@
                         <option value="group">Group</option>
                     </select>
                 </div>
+                <div class="form-group" id="user-fields" style="display: none;">
+                    <label for="users">Add Users to Wallet</label>
+                    <div id="user-inputs">
+                        <input type="email" class="form-control mb-2" name="users" placeholder="User Email">
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="add-user-btn">Add Another User</button>
+                </div>
                 <div class="form-group">
                     <label for="currency">Currency</label>
                     <select class="form-control" id="currency" name="currency" required>
@@ -29,7 +36,7 @@
                         <!-- Add more currencies as needed -->
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Create Wallet</button>
+                <button type="submit" class="btn btn-primary" name="action" value="create_wallet">Create Wallet</button>
             </form>
         </div>
     </div>
@@ -56,4 +63,25 @@
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('wallet_type').addEventListener('change', function () {
+    var userFields = document.getElementById('user-fields');
+    if (this.value === 'group') {
+        userFields.style.display = 'block';
+    } else {
+        userFields.style.display = 'none';
+    }
+});
+
+document.getElementById('add-user-btn').addEventListener('click', function () {
+    var userInputs = document.getElementById('user-inputs');
+    var newUserInput = document.createElement('input');
+    newUserInput.type = 'email';
+    newUserInput.name = 'users';
+    newUserInput.placeholder = 'User Email';
+    newUserInput.className = 'form-control mb-2';
+    userInputs.appendChild(newUserInput);
+});
+</script>
 {% endblock content %}

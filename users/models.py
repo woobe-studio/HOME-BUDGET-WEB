@@ -30,7 +30,7 @@ class Category(models.Model):
 
 
 class Wallet(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='wallets')
+    profiles = models.ManyToManyField(Profile, related_name='wallets')
     name = models.CharField(max_length=100)
     balance = models.DecimalField(default=Decimal('0.00'), max_digits=12, decimal_places=2)
     currency = models.CharField(max_length=3, default='USD')
@@ -39,7 +39,7 @@ class Wallet(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.name} ({self.profile.user.username})'
+        return self.name
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
@@ -56,11 +56,12 @@ class Wallet(models.Model):
                 return
         BalanceChange.objects.create(wallet=self, amount=self.balance, description=description)
 
-def default_wallet():
-    return Wallet.objects.first()
+    def get_profiles_display(self):
+        return ", ".join([profile.user.username for profile in self.profiles.all()])
+
 
 class BalanceChange(models.Model):
-    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='balance_changes', default=default_wallet)
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='balance_changes', default=None)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)

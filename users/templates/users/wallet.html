@@ -4,8 +4,9 @@
     <div class="card-body">
         <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
         <p class="text-center mb-4"> Current Balance: <span style='color:#41ff00'>{{ balance }}</span> <span style="color: #ff006a;">{{ currency }}</span></p>
-        <form method="post">
+        <form id="update-form" method="post" action="{% url 'users-wallet' wallet_id=wallet_id %}">
             {% csrf_token %}
+            <input type="hidden" name="wallet_id" value="{{ wallet_id }}">
             <div class="form-group">
                 <label for="amount" style="color: #f8f8f2;">Amount</label>
                 <input type="number" class="form-control" id="amount" name="amount" step="0.01" style="background-color: #282a36; color: #f8f8f2;" required>
@@ -50,6 +51,7 @@
         if (confirm("Are you sure you want to clear all categories?")) {
             window.location.href = "{% url 'users-clear_categories' wallet_id=wallet_id %}";
         }
+        return false;
     });
 </script>
 {% endblock wallet_content %}
