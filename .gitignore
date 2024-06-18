@@ -10,4 +10,4 @@ venv/
 
 .idea/
 
-*users/migrations/
+users/migrations/
