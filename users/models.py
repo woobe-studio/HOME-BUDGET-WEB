@@ -62,6 +62,7 @@ class Wallet(models.Model):
 
 class BalanceChange(models.Model):
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='balance_changes', default=None)
+    creation_user = models.CharField(max_length=100, default='you')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     description = models.CharField(max_length=100, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)

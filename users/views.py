@@ -56,19 +56,21 @@ def create_wallet(request):
         if existing_wallet:
             messages.error(request, 'A wallet with this name already exists.')
             return redirect('users-wallet_selection')
-
-        new_wallet = Wallet.objects.create(name=name, currency=currency, wallet_type=wallet_type)
-        new_wallet.profiles.add(profile)
-
+        if wallet_type == 'personal':
+            new_wallet = Wallet.objects.create(name=name, currency=currency, wallet_type=wallet_type)
+            new_wallet.profiles.add(profile)
         if wallet_type == 'group':
             user_emails = request.POST.getlist('users')
             for email in user_emails:
                 try:
                     user = User.objects.get(email=email)
                     user_profile = user.profile
+                    new_wallet = Wallet.objects.create(name=name, currency=currency, wallet_type=wallet_type)
+                    new_wallet.profiles.add(profile)
                     new_wallet.profiles.add(user_profile)
                 except User.DoesNotExist:
-                    messages.warning(request, f'User with email {email} does not exist.')
+                    messages.error(request, f'User with email {email} does not exist.')
+                    return redirect('users-wallet_selection')
 
         categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
         categories.sort()
@@ -123,14 +125,20 @@ def wallet(request, wallet_id):
                     if wallet.balance >= abs(amount):
                         wallet.balance += amount
                         wallet.save()
-                        BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj)
+                        creation_user = 'Not Specified'
+                        if wallet.wallet_type == 'personal':
+                            creation_user = 'you'
+                        elif wallet.wallet_type == 'group':
+                            creation_user= request.user.username
+                        BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj, creation_user=creation_user)
                         messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
                     else:
                         messages.error(request, 'Insufficient balance for the transaction')
                 else:
                     wallet.balance += amount
                     wallet.save()
-                    BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj)
+                    creation_user = 'you' if wallet.wallet_type == 'personal' else request.user.username
+                    BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj, creation_user=creation_user)
                     messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
             else:
                 messages.error(request, 'Amount must be non-zero to update the balance')
@@ -237,6 +245,9 @@ def balance_changes(request, wallet_id):
         balance_changes = sorted_changes.order_by('-timestamp')
         sort_by = 'SelectSort'
 
+    for change in balance_changes:
+        if wallet.wallet_type == 'group' and change.creation_user == request.user.username:
+            change.creation_user = 'you'
     paginator = Paginator(balance_changes, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
