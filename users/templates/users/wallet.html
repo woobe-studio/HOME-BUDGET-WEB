@@ -48,7 +48,7 @@
 
     document.getElementById("clear-categories-form").addEventListener("click", function() {
         if (confirm("Are you sure you want to clear all categories?")) {
-            window.location.href = "{% url 'users-clear_categories' %}";
+            window.location.href = "{% url 'users-clear_categories' wallet_id=wallet_id %}";
         }
     });
 </script>

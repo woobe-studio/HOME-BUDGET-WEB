@@ -1,37 +1,29 @@
 import csv
 import json
-
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
-
 from scripts.custom_scripts import *
 from scripts.custom_classes import *
-
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-
 from .forms import UpdateUserForm, UpdateProfileForm, WalletForm
-from .models import BalanceChange, Category
-
+from .models import BalanceChange, Category, Wallet
 
 def home(request):
     return render(request, 'users/home.html')
-
 
 @login_required
 def profile(request):
     if request.method == 'POST':
         user_form = UpdateUserForm(request.POST, instance=request.user)
         profile_form = UpdateProfileForm(request.POST, request.FILES, instance=request.user.profile)
-
         if user_form.is_valid() and profile_form.is_valid():
             user_form.save()
             profile_form.save()
@@ -40,13 +32,43 @@ def profile(request):
     else:
         user_form = UpdateUserForm(instance=request.user)
         profile_form = UpdateProfileForm(instance=request.user.profile)
-
     return render(request, 'users/profile.html', {'user_form': user_form, 'profile_form': profile_form})
 
+@login_required
+def wallet_selection(request):
+    profile = request.user.profile
+    wallets = Wallet.objects.filter(profile=profile)
+    return render(request, 'users/wallet_selection.html', {'wallets': wallets})
 
 @login_required
-def wallet(request):
+def create_wallet(request):
+    if request.method == 'POST':
+        profile = request.user.profile
+        name = request.POST.get('wallet_name')
+        currency = request.POST.get('currency')
+        wallet_type = request.POST.get('wallet_type')
+
+        new_wallet = Wallet.objects.create(profile=profile, name=name, currency=currency, wallet_type=wallet_type)
+
+        wallet_id = new_wallet.id
+
+        return render(request, 'users/wallet.html', {'wallet_id': wallet_id})
+
+@login_required
+def select_existing_wallet(request):
+    if request.method == 'POST':
+        wallet_id = request.POST.get('existing_wallet')
+        # Perform any actions needed with the selected wallet ID
+        # For example, you could redirect to a page specific to the selected wallet
+        return redirect('users-wallet', wallet_id=wallet_id)
+    else:
+        # Handle GET request if needed
+        pass
+
+@login_required
+def wallet(request, wallet_id):
     profile = request.user.profile
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=profile)
     form = WalletForm()
     if request.method == 'POST':
         if request.POST.get('action') == 'update_funds':
@@ -58,56 +80,56 @@ def wallet(request):
                 new_category = form.cleaned_data.get('new_category')
                 if new_category:
                     category_obj, created = Category.objects.get_or_create(name=new_category)
-                    profile.categories.add(category_obj)
+                    wallet.categories.add(category_obj)
                 elif category:
                     category_obj = category
-                    profile.categories.add(category_obj)
+                    wallet.categories.add(category_obj)
                 else:
                     messages.error(request, 'No category was selected')
-                    return redirect('users-wallet')
+                    return redirect('users-wallet', wallet_id=wallet_id)
                 if amount != Decimal('0'):
                     if amount < Decimal('0'):
-                        if profile.balance >= abs(amount):
-                            profile.balance += amount
-                            profile.save()
-                            BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
+                        if wallet.balance >= abs(amount):
+                            wallet.balance += amount
+                            wallet.save()
+                            BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj)
                             messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
                         else:
                             messages.error(request, 'Insufficient balance for the transaction')
                     else:
-                        profile.balance += amount
-                        profile.save()
-                        BalanceChange.objects.create(profile=profile, amount=amount, description=description, category=category_obj)
+                        wallet.balance += amount
+                        wallet.save()
+                        BalanceChange.objects.create(wallet=wallet, amount=amount, description=description, category=category_obj)
                         messages.success(request, f'Balance updated successfully: ${amount:.2f} | Category: {category_obj.name} | Description: {description}')
                 else:
                     messages.error(request, 'Amount must be non-zero to update the balance')
-                return redirect('users-wallet')
+                return redirect('users-wallet', wallet_id=wallet_id)
         elif request.POST.get('action') == 'clear_categories':
-            profile.categories.clear()
+            wallet.categories.clear()
             messages.success(request, 'Categories cleared successfully')
-            return redirect('users-wallet')
-    formatted_balance = f'{profile.balance:.2f}'
-    currency = profile.currency
-    categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'currency' : currency, 'categories': categories})
-
+            return redirect('users-wallet', wallet_id=wallet_id)
+    formatted_balance = f'{wallet.balance:.2f}'
+    currency = wallet.currency
+    categories = sorted(wallet.categories.all(), key=lambda c: c.name.lower())
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'currency': currency, 'categories': categories, 'wallet_id': wallet_id})
 
 @login_required
-def clear_categories(request):
+def clear_categories(request, wallet_id):
     profile = request.user.profile
-    profile.categories.clear()
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=profile)
+    wallet.categories.clear()
     default_categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
     default_categories.sort()
     for category_name in default_categories:
         category_obj, created = Category.objects.get_or_create(name=category_name)
-        profile.categories.add(category_obj)
-
+        wallet.categories.add(category_obj)
     messages.success(request, "All categories have been cleared and default categories have been added.")
-    return redirect('users-wallet')
+    return redirect('users-wallet', wallet_id=wallet_id)
 
 @login_required
-def balance_changes(request):
+def balance_changes(request, wallet_id):
     profile = request.user.profile
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=profile)
     sort_by = request.GET.get('sort_by')
     selected_category = request.GET.get('selected_category')
     min_amount = request.GET.get('min_amount')
@@ -152,7 +174,7 @@ def balance_changes(request):
     except ValueError:
         day_name_week = None
 
-    sorted_changes = BalanceChange.objects.filter(profile=profile)
+    sorted_changes = BalanceChange.objects.filter(wallet=wallet)
 
     category_filter_display = 'block'
     amount_filter_display = 'block'
@@ -164,7 +186,6 @@ def balance_changes(request):
         sorted_changes = sorted_changes.filter(amount__gte=min_amount)
     if max_amount is not None:
         sorted_changes = sorted_changes.filter(amount__lte=max_amount)
-
     if year is not None:
         sorted_changes = sorted_changes.filter(timestamp__year=year)
     if month is not None:
@@ -173,7 +194,6 @@ def balance_changes(request):
         sorted_changes = sorted_changes.filter(timestamp__week_day=day_name_week)
     if day is not None:
         sorted_changes = sorted_changes.filter(timestamp__day=day)
-
     if sort_by == 'AscendingCost':
         balance_changes = sorted_changes.order_by('amount')
     elif sort_by == 'DescendingCost':
@@ -194,9 +214,10 @@ def balance_changes(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    currency = profile.currency
-    categories = sorted(profile.categories.all(), key=lambda c: c.name.lower())
+    currency = wallet.currency
+    categories = sorted(wallet.categories.all(), key=lambda c: c.name.lower())
     return render(request, 'users/balance_changes.html', {
+        'wallet_id': wallet_id,
         'page_obj': page_obj,
         'sort_by': sort_by,
         'selected_category': selected_category,
@@ -217,23 +238,22 @@ def balance_changes(request):
         'day_name': day_name,
     })
 
+@login_required
+def clear_balance_changes(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=request.user.profile)
+    BalanceChange.objects.filter(wallet=wallet).delete()
+    messages.success(request, "All balance change history has been cleared.")
+    return redirect('users-balance_changes', wallet_id=wallet_id)
 
 @login_required
-def clear_balance_changes(request):
-    profile = request.user.profile
-    BalanceChange.objects.filter(profile=profile).delete()
-    messages.success(request, "All balance change history have been cleared.")
-    return redirect('users-balance_changes')
-
-@login_required
-def edit_balance_change(request):
-    profile = request.user.profile
+def edit_balance_change(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=request.user.profile)
     if request.method == 'POST':
         edit_id = request.POST.get('edit-id')
         edit_description = request.POST.get('edit-description')
         edit_category = request.POST.get('edit-category')
         try:
-            balance_change = BalanceChange.objects.get(id=edit_id, profile=profile)
+            balance_change = BalanceChange.objects.get(id=edit_id, wallet=wallet)
             if edit_description:
                 balance_change.description = edit_description
             if edit_category:
@@ -249,31 +269,30 @@ def edit_balance_change(request):
         except InvalidOperation:
             messages.error(request, "Invalid amount entered.")
 
-        return redirect('users-balance_changes')
-
+        return redirect('users-balance_changes', wallet_id=wallet_id)
 
 @login_required
-def delete_balance_change(request):
-    profile = request.user.profile
+def delete_balance_change(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=request.user.profile)
     if request.method == 'POST':
         delete_id = request.POST.get('delete-id')
         try:
-            balance_change = BalanceChange.objects.get(id=delete_id, profile=profile)
+            balance_change = BalanceChange.objects.get(id=delete_id, wallet=wallet)
             deleted_amount = balance_change.amount
             balance_change.delete()
-            profile.balance += deleted_amount
-            profile.save()
+            wallet.balance -= deleted_amount
+            wallet.save()
             messages.success(request, "Balance Change has been deleted successfully.")
         except BalanceChange.DoesNotExist:
             messages.error(request, "Balance Change not found.")
 
-        return redirect('users-balance_changes')
+        return redirect('users-balance_changes', wallet_id=wallet_id)
 
 
 @login_required
-def export_balance_changes(request):
-    profile = request.user.profile
-    balance_changes = BalanceChange.objects.filter(profile=profile)
+def export_balance_changes(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=request.user.profile)
+    balance_changes = BalanceChange.objects.filter(wallet=wallet)
 
     if request.method == 'POST':
         export_format = request.POST.get('export_format', 'pdf')
@@ -358,21 +377,16 @@ def export_balance_changes(request):
 
             return response
 
-    return redirect('users-balance_changes')
-
+    return redirect('users-balance_changes', wallet_id=wallet_id)
 
 @login_required
-def charts(request):
-    profile = request.user.profile
+def charts(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profile=request.user.profile)
+    balance_changes = BalanceChange.objects.filter(wallet=wallet)
 
-    # Retrieve all balance changes for the user profile
-    balance_changes = BalanceChange.objects.filter(profile=profile)
-
-    # Initialize income and expense data arrays
     income_data = [0] * 12
     expense_data = [0] * 12
 
-    # Populate income and expense data arrays for each balance change
     for change in balance_changes:
         month_index = change.timestamp.month - 1
         if change.amount > 0:
@@ -380,7 +394,6 @@ def charts(request):
         else:
             expense_data[month_index] += abs(change.amount)
 
-    # Prepare data to be passed to the template
     months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -394,4 +407,4 @@ def charts(request):
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
 
-    return render(request, 'users/charts.html', {'data': serialized_data})
+    return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id})

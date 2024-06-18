@@ -3,7 +3,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
-from pyexpat.errors import messages
+from django.contrib import messages
 
 from users.forms import RegisterForm, LoginForm
 

@@ -1,0 +1,59 @@
+{% extends "users/base.html" %}
+{% block title %}Wallets{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Create New Wallet</h2>
+            <form method="post" action="{% url 'users-create_wallet' %}" id="create-wallet">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="wallet_name">Wallet Name</label>
+                    <input type="text" class="form-control" id="wallet_name" name="wallet_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="wallet_type">Wallet Type</label>
+                    <select class="form-control" id="wallet_type" name="wallet_type" required>
+                        <option value="personal">Personal</option>
+                        <option value="group">Group</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select class="form-control" id="currency" name="currency" required>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="PLN">PLN</option>
+                        <!-- Add more currencies as needed -->
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Wallet</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Select Existing Wallet</h2>
+            {% if wallets %}
+            <form method="post" action="{% url 'select_existing_wallet' %}" id='select-existing-wallet'>
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="existing_wallet">Select Existing Wallet</label>
+                    <select class="form-control" id="existing_wallet" name="existing_wallet" required>
+                        {% for wallet in wallets %}
+                            <option value="{{ wallet.id }}">{{ wallet.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Enter</button>
+            </form>
+            {% else %}
+            <p>No wallets available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}
