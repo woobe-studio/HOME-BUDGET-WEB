@@ -2,7 +2,8 @@
 {% block wallet_content %}
 <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
     <div class="card-body">
-        <h2 class="text-center mb-4" style="color: #bd93f9;">Wallet</h2>
+        <h2 class="text-center mb-4" style="color: #bd93f9;">{{ wallet_name }}</h2>
+        <p class="text-center mb-4"><span style='color:#ff0000'>Wallet type: </span> <span style="color: #79fff4;">{{ wallet_type }}</span></p>
         <p class="text-center mb-4"> Current Balance: <span style='color:#41ff00'>{{ balance }}</span> <span style="color: #32b0ff;">{{ currency }}</span></p>
         <form id="update-form" method="post" action="{% url 'users-wallet' wallet_id=wallet_id %}">
             {% csrf_token %}

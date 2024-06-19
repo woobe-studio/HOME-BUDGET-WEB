@@ -142,7 +142,9 @@ def wallet(request, wallet_id):
     formatted_balance = f'{wallet.balance:.2f}'
     currency = wallet.currency
     categories = sorted(wallet.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'currency': currency, 'categories': categories, 'wallet_id': wallet_id})
+    wallet_name = wallet.name
+    wallet_type = wallet.wallet_type
+    return render(request, 'users/wallet.html', {'form': form, 'balance': formatted_balance, 'currency': currency, 'categories': categories, 'wallet_id': wallet_id, 'wallet_name': wallet_name, 'wallet_type': wallet_type})
 
 @login_required
 def clear_categories(request, wallet_id):
