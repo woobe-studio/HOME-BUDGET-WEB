@@ -75,29 +75,21 @@ def create_wallet(request):
                 except User.DoesNotExist:
                     messages.error(request, f'User with email {email} does not exist.')
                     return redirect('users-wallet_selection')
-
+        new_wallet.categories.clear()
         categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
         categories.sort()
         for category_name in categories:
             category_obj, created = Category.objects.get_or_create(name=category_name)
             new_wallet.categories.add(category_obj)
-        categories = sorted(new_wallet.categories.all(), key=lambda c: c.name.lower())
         wallet_id = new_wallet.id
         messages.success(request, 'Wallet created successfully.')
 
-        return render(request, 'users/wallet.html', {
-            'wallet_id': wallet_id,
-            'balance': '0.00',
-            'currency': currency,
-            'categories': categories,
-        })
+        return redirect('users-wallet', wallet_id=wallet_id)
 
 @login_required
 def select_existing_wallet(request):
     if request.method == 'POST':
         wallet_id = request.POST.get('existing_wallet')
-        # Perform any actions needed with the selected wallet ID
-        # For example, you could redirect to a page specific to the selected wallet
         return redirect('users-wallet', wallet_id=wallet_id)
     else:
         # Handle GET request if needed
