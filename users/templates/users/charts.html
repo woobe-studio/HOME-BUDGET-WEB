@@ -10,8 +10,11 @@
                 <option value="pie">Pie Chart</option>
             </select>
         </div>
-        {% if chartType != 'pie' %} <!-- Adjusted condition -->
+        {% if chartType != 'pie' %}
             <canvas id="monthlyChart" width="400" height="200"></canvas>
+        {% else %}
+            <canvas id="monthlyChart" width="400" height="200"></canvas>
+
         {% endif %}
     </div>
 </div>
@@ -131,6 +134,7 @@
                         }]
                     },
                     options: {
+                        aspectRatio: 2,
                         scales: {
                             yAxes: [{
                                 ticks: {
