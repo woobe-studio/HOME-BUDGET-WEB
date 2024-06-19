@@ -105,7 +105,7 @@
                             <p> Time: <span style="color: #55dbfd;"> {{ change.timestamp|date:"F j, Y, g:i a" }}</span></p>
                             <p>Description: <span style="color: #ff9900;">{{ change.description }}</span></p>
                             {% if change.amount > 0 %}
-                                <p>Amount: <span style='color:#41ff00'>{{ change.amount }}</span> <span style="color: #ff006a;">{{ currency }}</span></p>
+                                <p>Amount: <span style='color:#41ff00'>{{ change.amount }}</span> <span style="color: #32b0ff;">{{ currency }}</span></p>
                             {% else %}
                                 <p>Amount: <span style='color:#ff0000'>{{ change.amount }}</span> <span style="color: #32b0ff;">{{ currency }}</span></p>
                             {% endif %}
