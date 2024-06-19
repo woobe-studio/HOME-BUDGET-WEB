@@ -1,4 +1,7 @@
 import csv
+from io import BytesIO
+
+from openpyxl import Workbook
 import json
 
 from django.contrib.auth.models import User
@@ -17,6 +20,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UpdateUserForm, UpdateProfileForm, WalletForm
 from .models import BalanceChange, Category, Wallet
+
 
 def home(request):
     return render(request, 'users/home.html')
@@ -317,10 +321,13 @@ def delete_balance_change(request, wallet_id):
         try:
             balance_change = BalanceChange.objects.get(id=delete_id, wallet=wallet)
             deleted_amount = balance_change.amount
-            balance_change.delete()
-            wallet.balance -= deleted_amount
-            wallet.save()
-            messages.success(request, "Balance Change has been deleted successfully.")
+            if wallet.balance - deleted_amount >= 0:
+                balance_change.delete()
+                wallet.balance -= deleted_amount
+                wallet.save()
+                messages.success(request, "Balance Change has been deleted successfully.")
+            else:
+                messages.error(request, "Insufficient balance to delete this amount.")
         except BalanceChange.DoesNotExist:
             messages.error(request, "Balance Change not found.")
 
@@ -414,7 +421,35 @@ def export_balance_changes(request, wallet_id):
                 ])
 
             return response
+        elif export_format == 'excel':
+            excel_filename = "balance_changes_report.xlsx"
+            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{excel_filename}"'
 
+            output = BytesIO()
+            workbook = Workbook()
+            worksheet = workbook.active
+            worksheet.title = "Balance Changes"
+
+            headers = ['Time', 'Description', 'Amount', 'Category']
+            worksheet.append(headers)
+
+            for change in balance_changes:
+                worksheet.append([
+                    change.timestamp.strftime("%b %d, %Y %I:%M %p"),
+                    change.description,
+                    "${:.2f}".format(change.amount),
+                    change.category.name
+                ])
+
+            for column_cells in worksheet.columns:
+                length = max(len(str(cell.value)) for cell in column_cells)
+                worksheet.column_dimensions[column_cells[0].column_letter].width = length
+
+            workbook.save(output)
+            output.seek(0)
+            response.write(output.read())
+            return response
     return redirect('users-balance_changes', wallet_id=wallet_id)
 
 @login_required
