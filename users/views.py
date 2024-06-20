@@ -461,6 +461,8 @@ def charts(request, wallet_id):
         else:
             expense_data[month_index] += abs(change.amount)
 
+    years = get_years()
+
     months = [
         'January', 'February', 'March', 'April', 'May', 'June',
         'July', 'August', 'September', 'October', 'November', 'December'
@@ -473,5 +475,5 @@ def charts(request, wallet_id):
     }
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
-
-    return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id})
+    categories = sorted(wallet.categories.all(), key=lambda c: c.name.lower())
+    return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id, 'years': years, 'categories': categories,})

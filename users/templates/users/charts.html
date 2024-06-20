@@ -2,14 +2,34 @@
 {% block wallet_content %}
 <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a;">
     <div class="card-body">
-        <div class="form-group mb-3">
-            <label for="chartTypeSelect" class="form-label" style="color: #f8f8f2;">Select Chart Type:</label>
-            <select id="chartTypeSelect" class="form-select" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
+        <div class="form-group mb-3 d-flex flex-wrap align-items-start justify-content-center" style="margin-top: 20px;">
+            <label for="chartTypeSelect" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px; margin-left: 10px;">Select Chart Type:</label>
+            <select id="chartTypeSelect" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
                 <option value="bar">Bar Chart</option>
                 <option value="line">Line Chart</option>
                 <option value="pie">Pie Chart</option>
             </select>
+            <label for="yearSelect1" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px;">Select Year:</label>
+            <select id="yearSelect1" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
+                {% for year in years %}
+                <option value="{{ year }}">{{ year }}</option>
+                {% endfor %}
+            </select>
+            <label for="categorySelect" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px;">Select Category:</label>
+            <select id="categorySelect" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
+                {% for category in categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
         </div>
+        <div class="form-group mb-3 d-flex flex-wrap align-items-start justify-content-center" style="margin-top: 20px;">
+            <button type="submit" class="btn btn-dark mb-2 mb-sm-0 align-self-end" id="check_button">Check</button>
+        </div>
+
+
+
+
+
         <canvas id="monthlyChart" width="400" height="200"></canvas>
     </div>
 </div>
@@ -62,12 +82,11 @@
             }
         };
 
-        myChart = new Chart(ctx, chartConfig);
-
-        document.getElementById('chartTypeSelect').addEventListener('change', function () {
-            currentType = this.value;
+        function updateChart() {
             chartConfig.type = currentType;
-            myChart.destroy(); 
+            chartConfig.data.datasets[0].data = data.income_data;
+            chartConfig.data.datasets[1].data = data.expense_data.map(value => -Math.abs(value));
+            myChart.destroy();
             if (currentType !== 'pie') {
                 chartConfig.options.scales.x.stacked = true;
                 chartConfig.options.scales.y.stacked = true;
@@ -148,6 +167,23 @@
                     }
                 });
             }
+        }
+
+        myChart = new Chart(ctx, chartConfig);
+
+        document.getElementById('chartTypeSelect').addEventListener('change', function () {
+            currentType = this.value;
+            updateChart();
+        });
+
+        document.getElementById('yearSelect').addEventListener('change', function () {
+            var selectedYear = this.value;
+            fetch('/get_data_for_year/' + selectedYear)
+                .then(response => response.json())
+                .then(newData => {
+                    data = newData;
+                    updateChart();
+                });
         });
     });
 </script>
