@@ -10,12 +10,7 @@
                 <option value="pie">Pie Chart</option>
             </select>
         </div>
-        {% if chartType != 'pie' %}
-            <canvas id="monthlyChart" width="400" height="200"></canvas>
-        {% else %}
-            <canvas id="monthlyChart" width="400" height="200"></canvas>
-
-        {% endif %}
+        <canvas id="monthlyChart" width="400" height="200"></canvas>
     </div>
 </div>
 
@@ -56,6 +51,12 @@
                             display: true,
                             zeroLineColor: 'rgba(255,255,255,0.6)'
                         }
+                    },
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
                     }
                 }
             }
@@ -66,8 +67,10 @@
         document.getElementById('chartTypeSelect').addEventListener('change', function () {
             currentType = this.value;
             chartConfig.type = currentType;
-            myChart.destroy(); // Destroy the existing chart
+            myChart.destroy(); 
             if (currentType !== 'pie') {
+                chartConfig.options.scales.x.stacked = true;
+                chartConfig.options.scales.y.stacked = true;
                 myChart = new Chart(ctx, chartConfig);
             } else {
                 myChart = new Chart(ctx, {
@@ -130,7 +133,7 @@
                                 'rgba(255, 99, 132, 1)'
                             ],
                             borderWidth: 1,
-                            data: data.income_data.concat(data.expense_data)
+                            data: data.income_data.concat(data.expense_data.map(value => -Math.abs(value)))
                         }]
                     },
                     options: {
