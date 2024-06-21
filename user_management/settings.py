@@ -29,7 +29,9 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = str(os.getenv('ALLOWED_HOSTS')).split(' ')
+ALLOWED_HOSTS = str(os.getenv('ALLOWED_HOSTS', 'localhost')).split(' ')
+ALLOWED_HOSTS.append('0.0.0.0')
+
 
 
 # Application definition
@@ -93,6 +95,7 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT', ''),
     }
 }
+
 
 
 # Password validation
@@ -161,8 +164,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = str(os.getenv('EMAIL_USER'))
-EMAIL_HOST_PASSWORD = str(os.getenv('EMAIL_PASSWORD'))
+EMAIL_HOST_USER = str(os.getenv('SMTP_USER'))
+EMAIL_HOST_PASSWORD = str(os.getenv('SMTP_PASSWORD'))
 
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
 

@@ -1,5 +1,5 @@
 # Użyj oficjalnego obrazu Pythona jako bazy
-FROM python:3.8
+FROM python:3.10.0
 
 # Ustaw katalog roboczy w kontenerze
 WORKDIR /app
