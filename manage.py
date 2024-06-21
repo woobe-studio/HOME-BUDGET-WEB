@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from psycopg2 import connect, OperationalError
 
 def create_database():
-    load_dotenv(dotenv_path='data.env')
+    load_dotenv(dotenv_path='.env')
     db_name = os.getenv('DB_NAME')
     db_user = os.getenv('DB_USER')
     db_password = os.getenv('DB_PASSWORD')
