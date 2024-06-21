@@ -5,30 +5,17 @@
         <div class="form-group mb-3 d-flex flex-wrap align-items-start justify-content-center" style="margin-top: 20px;">
             <label for="chartTypeSelect" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px; margin-left: 10px;">Select Chart Type:</label>
             <select id="chartTypeSelect" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="pie">Pie Chart</option>
+                <option value="bar" {% if chart_type == 'bar' %}selected{% endif %}>Bar Chart</option>
+                <option value="line" {% if chart_type == 'line' %}selected{% endif %}>Line Chart</option>
+                <option value="pie" {% if chart_type == 'pie' %}selected{% endif %}>Pie Chart</option>
             </select>
-            <label for="yearSelect1" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px;">Select Year:</label>
-            <select id="yearSelect1" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
+            <label for="yearSelect" id="yearSelectLabel" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px;">Select Year:</label>
+            <select id="yearSelect" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
                 {% for year in years %}
-                <option value="{{ year }}">{{ year }}</option>
-                {% endfor %}
-            </select>
-            <label for="categorySelect" class="form-label" style="color: #f8f8f2; margin-bottom: 10px; margin-right: 10px;">Select Category:</label>
-            <select id="categorySelect" class="form-select mx-2 mb-2 mb-sm-0" style="background-color: #282a36; color: #f8f8f2; border: 1px solid #6272a4;">
-                {% for category in categories %}
-                <option value="{{ category }}">{{ category }}</option>
+                <option value="{{ year }}" {% if year == selected_year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
                 {% endfor %}
             </select>
         </div>
-        <div class="form-group mb-3 d-flex flex-wrap align-items-start justify-content-center" style="margin-top: 20px;">
-            <button type="submit" class="btn btn-dark mb-2 mb-sm-0 align-self-end" id="check_button">Check</button>
-        </div>
-
-
-
-
 
         <canvas id="monthlyChart" width="400" height="200"></canvas>
     </div>
@@ -39,7 +26,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         var ctx = document.getElementById('monthlyChart').getContext('2d');
         var data = {{ data|safe }};
-        var currentType = 'bar';
+        var currentType = document.getElementById('chartTypeSelect').value;
         var myChart;
 
         var chartConfig = {
@@ -88,73 +75,49 @@
             chartConfig.data.datasets[1].data = data.expense_data.map(value => -Math.abs(value));
             myChart.destroy();
             if (currentType !== 'pie') {
+                document.getElementById('yearSelect').style.display = 'block';
+                document.getElementById('yearSelectLabel').style.display = 'block';
                 chartConfig.options.scales.x.stacked = true;
                 chartConfig.options.scales.y.stacked = true;
                 myChart = new Chart(ctx, chartConfig);
             } else {
+                document.getElementById('yearSelect').style.display = 'none';
+                document.getElementById('yearSelectLabel').style.display = 'none';
+                var pieData = {
+                    labels: data.categories,
+                    datasets: [{
+                        label: 'Categorized Income',
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',   // Red
+                            'rgba(54, 162, 235, 0.2)',   // Blue
+                            'rgba(255, 206, 86, 0.2)',   // Yellow
+                            'rgba(75, 192, 192, 0.2)',   // Teal
+                            'rgba(153, 102, 255, 0.2)',  // Purple
+                            'rgba(255, 159, 64, 0.2)',   // Orange
+                            'rgba(0, 128, 0, 0.2)',      // Green
+                            'rgba(255, 0, 255, 0.2)',    // Magenta
+                            'rgba(128, 128, 0, 0.2)',    // Olive
+                            'rgba(128, 0, 128, 0.2)',    // Purple
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',    // Red
+                            'rgba(54, 162, 235, 1)',    // Blue
+                            'rgba(255, 206, 86, 1)',    // Yellow
+                            'rgba(75, 192, 192, 1)',    // Teal
+                            'rgba(153, 102, 255, 1)',   // Purple
+                            'rgba(255, 159, 64, 1)',    // Orange
+                            'rgba(0, 128, 0, 1)',       // Green
+                            'rgba(255, 0, 255, 1)',     // Magenta
+                            'rgba(128, 128, 0, 1)',     // Olive
+                            'rgba(128, 0, 128, 1)',     // Purple
+                        ],
+                        borderWidth: 1,
+                        data: data.categorized_income_data
+                    }]
+                };
                 myChart = new Chart(ctx, {
                     type: 'pie',
-                    data: {
-                        labels: data.months,
-                        datasets: [{
-                            label: 'Monthly Data',
-                            backgroundColor: [
-                                'rgba(255, 99, 132, 0.2)',
-                                'rgba(54, 162, 235, 0.2)',
-                                'rgba(255, 206, 86, 0.2)',
-                                'rgba(75, 192, 192, 0.2)',
-                                'rgba(153, 102, 255, 0.2)',
-                                'rgba(255, 159, 64, 0.2)',
-                                'rgba(255, 99, 132, 0.4)',
-                                'rgba(54, 162, 235, 0.4)',
-                                'rgba(255, 206, 86, 0.4)',
-                                'rgba(75, 192, 192, 0.4)',
-                                'rgba(153, 102, 255, 0.4)',
-                                'rgba(255, 159, 64, 0.4)',
-                                'rgba(255, 99, 132, 0.6)',
-                                'rgba(54, 162, 235, 0.6)',
-                                'rgba(255, 206, 86, 0.6)',
-                                'rgba(75, 192, 192, 0.6)',
-                                'rgba(153, 102, 255, 0.6)',
-                                'rgba(255, 159, 64, 0.6)',
-                                'rgba(255, 99, 132, 0.8)',
-                                'rgba(54, 162, 235, 0.8)',
-                                'rgba(255, 206, 86, 0.8)',
-                                'rgba(75, 192, 192, 0.8)',
-                                'rgba(153, 102, 255, 0.8)',
-                                'rgba(255, 159, 64, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)',
-                                'rgba(54, 162, 235, 1)',
-                                'rgba(255, 206, 86, 1)',
-                                'rgba(75, 192, 192, 1)',
-                                'rgba(153, 102, 255, 1)',
-                                'rgba(255, 159, 64, 1)',
-                                'rgba(255, 99, 132, 1)'
-                            ],
-                            borderWidth: 1,
-                            data: data.income_data.concat(data.expense_data.map(value => -Math.abs(value)))
-                        }]
-                    },
+                    data: pieData,
                     options: {
                         aspectRatio: 2,
                         scales: {
@@ -178,12 +141,33 @@
 
         document.getElementById('yearSelect').addEventListener('change', function () {
             var selectedYear = this.value;
-            fetch('/get_data_for_year/' + selectedYear)
-                .then(response => response.json())
-                .then(newData => {
-                    data = newData;
-                    updateChart();
-                });
+            var chartType = document.getElementById('chartTypeSelect').value;
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'users-charts' wallet_id=wallet_id %}";
+
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+
+            var yearInput = document.createElement('input');
+            yearInput.type = 'hidden';
+            yearInput.name = 'selected_year';
+            yearInput.value = selectedYear;
+
+            
+            var chartTypeInput = document.createElement('input');
+            chartTypeInput.type = 'hidden';
+            chartTypeInput.name = 'chart_type';
+            chartTypeInput.value = chartType;
+            
+            form.appendChild(csrfInput);
+            form.appendChild(yearInput);
+            form.appendChild(chartTypeInput);
+
+            document.body.appendChild(form);
+            form.submit();
         });
     });
 </script>

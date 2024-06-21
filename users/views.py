@@ -450,6 +450,8 @@ def export_balance_changes(request, wallet_id):
 def charts(request, wallet_id):
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
     balance_changes = BalanceChange.objects.filter(wallet=wallet)
+    selected_year = int(request.POST.get('selected_year', '2024'))
+    chart_type = request.POST.get('chart_type', 'bar')
 
     income_data = [0] * 12
     expense_data = [0] * 12
@@ -461,7 +463,27 @@ def charts(request, wallet_id):
         else:
             expense_data[month_index] += abs(change.amount)
 
+    if request.method == 'POST':
+        balance_changes = balance_changes.filter(timestamp__year=selected_year)
+        income_data = [0] * 12
+        expense_data = [0] * 12
+        for change in balance_changes:
+            month_index = change.timestamp.month - 1
+            if change.amount > 0:
+                income_data[month_index] += change.amount
+            else:
+                expense_data[month_index] += abs(change.amount)
+
     years = get_years()
+
+    categorized_income_data = {}
+    for category in wallet.categories.all():
+        # Get income data for the current category
+        category_income_data = [transaction.amount for transaction in BalanceChange.objects.filter(wallet=wallet, category=category) if transaction.amount > 0]
+        # Sum the income data for the category
+        total_income = sum(category_income_data)
+        # Add category name and total income to the dictionary
+        categorized_income_data[category.name] = total_income
 
     months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -472,8 +494,9 @@ def charts(request, wallet_id):
         'months': months,
         'income_data': income_data,
         'expense_data': expense_data,
+        'categories': list(categorized_income_data.keys()),  # List of category names
+        'categorized_income_data': list(categorized_income_data.values())
     }
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
-    categories = sorted(wallet.categories.all(), key=lambda c: c.name.lower())
-    return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id, 'years': years, 'categories': categories,})
+    return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id, 'years': years, 'selected_year':selected_year, 'chart_type': chart_type,})
