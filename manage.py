@@ -3,6 +3,8 @@
 import os
 import sys
 
+
+
 def create_superuser():
     """Create superuser if not exists."""
     from django.contrib.auth import get_user_model
@@ -27,11 +29,19 @@ def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'user_management.settings')
     try:
         from django.core.management import execute_from_command_line
+        from django.core.management import call_command
 
         execute_from_command_line(sys.argv)
 
         # Create superuser after the application is fully loaded
         create_superuser()
+
+        from django.db import connection
+
+        if not connection.settings_dict['NAME']:
+            call_command('makemigrations')
+            call_command('migrate')
+
     except ImportError as exc:
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "
