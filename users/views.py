@@ -505,38 +505,44 @@ def charts(request, wallet_id):
 
 
 @login_required
-def add_users(request, wallet_id):
+def add_or_remove_users(request, wallet_id):
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
 
     if request.method == 'POST':
-        if wallet.wallet_type == 'personal':
-            messages.error(request, 'You cannot add another user to a personal wallet.')
-        elif wallet.wallet_type == 'group':
-            user_emails = request.POST.getlist('users')
-            remove_user_ids = request.POST.getlist('remove_users')
+        min_profile_id = wallet.profiles.aggregate(min_id=Min('id'))['min_id']
+        wallet_owner = Profile.objects.get(id=min_profile_id)
+        if wallet_owner != request.user.profile:
+            messages.error(request, 'You are not the owner of this wallet.')
+        else:
+            if wallet.wallet_type == 'personal':
+                messages.error(request, 'You cannot add another user to a personal wallet.')
+            elif wallet.wallet_type == 'group':
+                user_emails = request.POST.getlist('users')
+                remove_user_ids = request.POST.getlist('remove_users')
 
-            for user_id in remove_user_ids:
-                try:
-                    user_profile = Profile.objects.get(id=user_id)
-                    wallet.profiles.remove(user_profile)
-                    messages.success(request, f'User with email {user_profile.user.email} removed from the wallet.')
-                except User.DoesNotExist:
-                    messages.error(request, 'User does not exist.')
-
-            for email in user_emails:
-                if email != '':
+                for user_id in remove_user_ids:
                     try:
-                        user = User.objects.get(email=email)
-                        user_profile = user.profile
-                        if wallet.profiles.filter(id=user_profile.id).exists():
-                            messages.error(request, f'User with email {email} is already in the wallet.')
-                        else:
-                            wallet.profiles.add(user_profile)
-                            messages.success(request, f'User with email {email} added to the wallet.')
+                        user_profile = Profile.objects.get(id=user_id)
+                        wallet.profiles.remove(user_profile)
+                        messages.success(request, f'User with email {user_profile.user.email} removed from the wallet.')
                     except User.DoesNotExist:
-                        messages.error(request, f'User with email {email} does not exist.')
-                        return redirect('users-add_users', wallet_id=wallet_id)
+                        messages.error(request, 'User does not exist.')
+
+                for email in user_emails:
+                    if email != '':
+                        try:
+                            user = User.objects.get(email=email)
+                            user_profile = user.profile
+                            if wallet.profiles.filter(id=user_profile.id).exists():
+                                messages.error(request, f'User with email {email} is already in the wallet.')
+                            else:
+                                wallet.profiles.add(user_profile)
+                                messages.success(request, f'User with email {email} added to the wallet.')
+                        except User.DoesNotExist:
+                            messages.error(request, f'User with email {email} does not exist.')
+                            return redirect('users-add_or_remove_users', wallet_id=wallet_id)
 
     current_users = wallet.profiles.exclude(id=wallet.profiles.aggregate(min_id=Min('id'))['min_id'])
     current_users = current_users.exclude(id=request.user.profile.id)
-    return render(request, 'users/wallet_users_add.html', {'wallet_id': wallet_id, 'current_users': current_users})
+    return render(request, 'users/wallet_users_add_or_remove.html', {'wallet_id': wallet_id, 'current_users': current_users})
+

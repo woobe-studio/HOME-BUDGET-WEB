@@ -6,7 +6,7 @@
     <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
         <div class="card-body">
             <h2 class="card-title mb-4">Add/Remove Users from Wallet</h2>
-            <form method="post" action="{% url 'users-add_users' wallet_id %}" id="add-users-form">
+            <form method="post" action="{% url 'users-add_or_remove_users' wallet_id %}" id="add-users-form">
                 {% csrf_token %}
                 <div id="user-fields">
                     <div id="user-inputs">
