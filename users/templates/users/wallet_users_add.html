@@ -1,0 +1,37 @@
+{% extends "users/wallet_base.html" %}
+{% block title %}Wallet{% endblock %}
+
+{% block wallet_content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Users</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
+            <div class="card-body">
+                <h2 class="card-title mb-4">Add Users to Wallet</h2>
+                <div id="user-fields">
+                    <div id="user-inputs">
+                        <input type="email" class="form-control mb-2" name="users" placeholder="User Email">
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="add-user-btn">Add Another User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    document.getElementById('add-user-btn').addEventListener('click', function () {
+        var userInputs = document.getElementById('user-inputs');
+        var newUserInput = document.createElement('input');
+        newUserInput.type = 'email';
+        newUserInput.name = 'users';
+        newUserInput.placeholder = 'User Email';
+        newUserInput.className = 'form-control mb-2';
+        userInputs.appendChild(newUserInput);
+    });
+    </script>
+{% endblock wallet_content %}

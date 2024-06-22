@@ -500,3 +500,10 @@ def charts(request, wallet_id):
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
     return render(request, 'users/charts.html', {'data': serialized_data, 'wallet_id': wallet_id, 'years': years, 'selected_year':selected_year, 'chart_type': chart_type,})
+
+
+@login_required
+def add_users(request, wallet_id):
+    wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
+
+    return render(request, 'users/wallet_users_add.html', {'wallet_id': wallet_id})
