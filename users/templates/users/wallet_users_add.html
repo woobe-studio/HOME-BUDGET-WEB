@@ -2,36 +2,49 @@
 {% block title %}Wallet{% endblock %}
 
 {% block wallet_content %}
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Users</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-4">
-        <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
-            <div class="card-body">
-                <h2 class="card-title mb-4">Add Users to Wallet</h2>
+<div class="container mt-4">
+    <div class="card" style="background-color: #44475a; color: #f8f8f2; border: 1px solid #6272a4;">
+        <div class="card-body">
+            <h2 class="card-title mb-4">Add/Remove Users from Wallet</h2>
+            <form method="post" action="{% url 'users-add_users' wallet_id %}" id="add-users-form">
+                {% csrf_token %}
                 <div id="user-fields">
                     <div id="user-inputs">
                         <input type="email" class="form-control mb-2" name="users" placeholder="User Email">
                     </div>
                     <button type="button" class="btn btn-secondary" id="add-user-btn">Add Another User</button>
                 </div>
-            </div>
+                <div class="form-group mt-3">
+                    <label for="remove-users">Remove Users</label>
+                    <select multiple class="form-control" id="remove-users" name="remove_users">
+                        {% for user in current_users %}
+                            <option value="{{ user.id }}">{{ user.user.email }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="button" class="btn btn-secondary mt-2" id="deselect-users-btn">Deselect All Users</button>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Submit</button>
+            </form>
         </div>
     </div>
-    
-    <script>
-    document.getElementById('add-user-btn').addEventListener('click', function () {
-        var userInputs = document.getElementById('user-inputs');
-        var newUserInput = document.createElement('input');
-        newUserInput.type = 'email';
-        newUserInput.name = 'users';
-        newUserInput.placeholder = 'User Email';
-        newUserInput.className = 'form-control mb-2';
-        userInputs.appendChild(newUserInput);
-    });
-    </script>
+</div>
+
+<script>
+document.getElementById('add-user-btn').addEventListener('click', function () {
+    var userInputs = document.getElementById('user-inputs');
+    var newUserInput = document.createElement('input');
+    newUserInput.type = 'email';
+    newUserInput.name = 'users';
+    newUserInput.placeholder = 'User Email';
+    newUserInput.className = 'form-control mb-2';
+    userInputs.appendChild(newUserInput);
+});
+
+document.getElementById('deselect-users-btn').addEventListener('click', function () {
+    var removeUsersSelect = document.getElementById('remove-users');
+    for (var i = 0; i < removeUsersSelect.options.length; i++) {
+        removeUsersSelect.options[i].selected = false;
+    }
+});
+</script>
 {% endblock wallet_content %}

@@ -1,6 +1,7 @@
 import csv
 from io import BytesIO
 
+from django.db.models import Min
 from openpyxl import Workbook
 import json
 
@@ -19,7 +20,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import UpdateUserForm, UpdateProfileForm, WalletForm
-from .models import BalanceChange, Category, Wallet
+from .models import BalanceChange, Category, Wallet, Profile
 
 
 def home(request):
@@ -65,16 +66,17 @@ def create_wallet(request):
             new_wallet.profiles.add(profile)
         if wallet_type == 'group':
             user_emails = request.POST.getlist('users')
+            new_wallet = Wallet.objects.create(name=name, currency=currency, wallet_type=wallet_type)
+            new_wallet.profiles.add(profile)
             for email in user_emails:
-                try:
-                    user = User.objects.get(email=email)
-                    user_profile = user.profile
-                    new_wallet = Wallet.objects.create(name=name, currency=currency, wallet_type=wallet_type)
-                    new_wallet.profiles.add(profile)
-                    new_wallet.profiles.add(user_profile)
-                except User.DoesNotExist:
-                    messages.error(request, f'User with email {email} does not exist.')
-                    return redirect('users-wallet_selection')
+                if email != '':
+                    try:
+                        user = User.objects.get(email=email)
+                        user_profile = user.profile
+                        new_wallet.profiles.add(user_profile)
+                    except User.DoesNotExist:
+                        messages.error(request, f'User with email {email} does not exist.')
+                        return redirect('users-wallet_selection')
         new_wallet.categories.clear()
         categories = ['Entertainment', 'Food', 'Transportation', 'Health', 'Shopping', 'Savings']
         categories.sort()
@@ -506,4 +508,34 @@ def charts(request, wallet_id):
 def add_users(request, wallet_id):
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
 
-    return render(request, 'users/wallet_users_add.html', {'wallet_id': wallet_id})
+    if request.method == 'POST':
+        if wallet.wallet_type == 'personal':
+            messages.error(request, 'You cannot add another user to a personal wallet.')
+        elif wallet.wallet_type == 'group':
+            user_emails = request.POST.getlist('users')
+            remove_user_ids = request.POST.getlist('remove_users')
+
+            for user_id in remove_user_ids:
+                try:
+                    user_profile = Profile.objects.get(id=user_id)
+                    wallet.profiles.remove(user_profile)
+                    messages.success(request, f'User with email {user_profile.user.email} removed from the wallet.')
+                except User.DoesNotExist:
+                    messages.error(request, 'User does not exist.')
+
+            for email in user_emails:
+                if email != '':
+                    try:
+                        user = User.objects.get(email=email)
+                        user_profile = user.profile
+                        if wallet.profiles.filter(id=user_profile.id).exists():
+                            messages.error(request, f'User with email {email} is already in the wallet.')
+                        else:
+                            wallet.profiles.add(user_profile)
+                            messages.success(request, f'User with email {email} added to the wallet.')
+                    except User.DoesNotExist:
+                        messages.error(request, f'User with email {email} does not exist.')
+                        return redirect('users-add_users', wallet_id=wallet_id)
+
+    current_users = wallet.profiles.exclude(id=wallet.profiles.aggregate(min_id=Min('id'))['min_id'])
+    return render(request, 'users/wallet_users_add.html', {'wallet_id': wallet_id, 'current_users': current_users})
