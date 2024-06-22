@@ -538,4 +538,5 @@ def add_users(request, wallet_id):
                         return redirect('users-add_users', wallet_id=wallet_id)
 
     current_users = wallet.profiles.exclude(id=wallet.profiles.aggregate(min_id=Min('id'))['min_id'])
+    current_users = current_users.exclude(id=request.user.profile.id)
     return render(request, 'users/wallet_users_add.html', {'wallet_id': wallet_id, 'current_users': current_users})
