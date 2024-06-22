@@ -1,5 +1,6 @@
 import csv
 from io import BytesIO
+from currency_converter import CurrencyConverter
 
 from django.db.models import Min
 from openpyxl import Workbook
@@ -51,25 +52,35 @@ def wallet_selection(request):
 
 @login_required
 def wallets_pie_chart(request):
-    # Assuming you have access to the current user's profile
     current_profile = request.user.profile
 
     # Retrieve all wallets owned by the current profile
     wallets = Wallet.objects.filter(profiles__in=[current_profile])
 
+    # Create a CurrencyConverter object
+    currency_converter = CurrencyConverter()
+
+    selected_currency = request.POST.get('currencySelect', 'PLN')
     # Prepare data for the pie chart
-    wallet_names = [wallet.name for wallet in wallets]
-    wallet_amounts = [wallet.balance for wallet in wallets]
+    wallet_names = []
+    wallet_amounts_pln = []
+
+    for wallet in wallets:
+        # Convert balance to PLN
+        balance_pln = currency_converter.convert(wallet.balance, wallet.currency, selected_currency)
+
+        wallet_names.append(wallet.name)
+        wallet_amounts_pln.append(balance_pln)
 
     # Pass the data to the template
     data = {
         'wallet_names': wallet_names,
-        'wallet_amounts': wallet_amounts,
+        'wallet_amounts': wallet_amounts_pln,
     }
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
 
-    return render(request, 'users/wallets_pie_chart.html', {'data': serialized_data})
+    return render(request, 'users/wallets_pie_chart.html', {'data': serialized_data, 'selected_currency': selected_currency})
 
 @login_required
 def create_wallet(request):

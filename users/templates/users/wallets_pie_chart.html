@@ -3,6 +3,16 @@
 {% block content %}
 <div class="card shadow-lg border-0 rounded-lg" style="background-color: #44475a; margin-top: 20px;">
     <div class="card-body" style="padding-bottom: 20px;">
+        <h2 style="text-align: center; color: #ff7337;">All Wallets Balance Overview</h2>
+        <div>
+            <label for="currencySelect">Select Currency:</label>
+            <select id="currencySelect">
+                <option value="PLN" {% if selected_currency == "PLN" %}selected{% endif %}>PLN</option>
+                <option value="USD" {% if selected_currency == "USD" %}selected{% endif %}>USD</option>
+                <option value="EUR" {% if selected_currency == "EUR" %}selected{% endif %}>EUR</option>
+                <option value="GBP" {% if selected_currency == "GBP" %}selected{% endif %}>GBP</option>
+            </select>
+        </div>
         <canvas id="walletPieChart" width="400" height="200"></canvas>
     </div>
 </div>
@@ -16,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pieData = {
         labels: data.wallet_names,
         datasets: [{
-            label: 'Wallet Amount',
+            label: 'Wallet Amount (PLN)',
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',   // Red
                 'rgba(54, 162, 235, 0.2)',   // Blue
@@ -58,9 +68,35 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }]
             }
+        },
+        title: {
+            display: true,
+            text: 'Wallet Balance (PLN)',
+            fontSize: 18
         }
     });
-    
+    document.getElementById('currencySelect').addEventListener('change', function () {
+            var currencySelect = this.value;
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = "{% url 'users-wallets_pie_chart' %}";
+
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+
+            var currencyInput = document.createElement('input');
+            currencyInput.type = 'hidden';
+            currencyInput.name = 'currencySelect';
+            currencyInput.value = currencySelect;
+        
+            form.appendChild(csrfInput);
+            form.appendChild(currencyInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        });
 });
 </script>
 {% endblock content %}
