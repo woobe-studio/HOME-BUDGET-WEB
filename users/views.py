@@ -44,10 +44,32 @@ def profile(request):
 
 @login_required
 def wallet_selection(request):
-    profile = request.user.profile
-    wallets = Wallet.objects.filter(profiles__in=[request.user.profile])
+    current_profile = request.user.profile
+    wallets = Wallet.objects.filter(profiles__in=[current_profile])
     return render(request, 'users/wallet_selection.html', {'wallets': wallets})
 
+
+@login_required
+def wallets_pie_chart(request):
+    # Assuming you have access to the current user's profile
+    current_profile = request.user.profile
+
+    # Retrieve all wallets owned by the current profile
+    wallets = Wallet.objects.filter(profiles__in=[current_profile])
+
+    # Prepare data for the pie chart
+    wallet_names = [wallet.name for wallet in wallets]
+    wallet_amounts = [wallet.balance for wallet in wallets]
+
+    # Pass the data to the template
+    data = {
+        'wallet_names': wallet_names,
+        'wallet_amounts': wallet_amounts,
+    }
+
+    serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
+
+    return render(request, 'users/wallets_pie_chart.html', {'data': serialized_data})
 
 @login_required
 def create_wallet(request):
@@ -545,4 +567,3 @@ def add_or_remove_users(request, wallet_id):
     current_users = wallet.profiles.exclude(id=wallet.profiles.aggregate(min_id=Min('id'))['min_id'])
     current_users = current_users.exclude(id=request.user.profile.id)
     return render(request, 'users/wallet_users_add_or_remove.html', {'wallet_id': wallet_id, 'current_users': current_users})
-

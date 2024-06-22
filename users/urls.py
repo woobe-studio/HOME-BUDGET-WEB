@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import home, profile, RegisterView, wallet, clear_balance_changes, balance_changes, clear_categories, \
     charts, edit_balance_change, delete_balance_change, export_balance_changes, create_wallet, \
-    wallet_selection, select_existing_wallet, add_or_remove_users
+    wallet_selection, select_existing_wallet, add_or_remove_users, wallets_pie_chart
 
 urlpatterns = [
     path('', home, name='users-home'),
@@ -9,6 +9,7 @@ urlpatterns = [
     path('profile/', profile, name='users-profile'),
     path('wallet/<int:wallet_id>/', wallet, name='users-wallet'),
     path('wallet_selection/', wallet_selection, name='users-wallet_selection'),
+    path('wallets_pie_chart/', wallets_pie_chart, name='users-wallets_pie_chart'),
     path('create-wallet/', create_wallet, name='users-create_wallet'),
     path('select_existing_wallet/', select_existing_wallet, name='select_existing_wallet'),
     path('clear-categories/<int:wallet_id>/', clear_categories, name='users-clear_categories'),
