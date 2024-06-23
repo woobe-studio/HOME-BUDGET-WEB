@@ -38,6 +38,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    command: ["./wait-for-db.sh", "db", "python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 volumes:
   postgres_data:
