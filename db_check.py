@@ -6,41 +6,6 @@ from dotenv import load_dotenv
 from psycopg2 import sql
 
 
-def create_database():
-    load_dotenv(dotenv_path='.env')
-    conn = psycopg2.connect(
-        dbname="postgres",
-        user=os.getenv('DB_USER'),
-        password=os.getenv('DB_PASSWORD'),
-        host=os.getenv('DB_HOST'),
-        port=os.getenv('DB_PORT')
-    )
-    conn.autocommit = True
-    cur = conn.cursor()
-    dbname = os.getenv('DB_NAME')
-
-    # Check if the database already exists
-    cur.execute(sql.SQL("SELECT 1 FROM pg_database WHERE datname = %s"), [dbname])
-    exists = cur.fetchone()
-
-    # If the database doesn't exist, create it
-    if not exists:
-        cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
-        print(f"Database '{dbname}' created successfully.")
-        # Apply migrations
-        apply_migrations()
-    else:
-        print(f"Database '{dbname}' already exists.")
-        # Check if migrations are needed
-        if migrations_needed():
-            apply_migrations()
-        else:
-            print("No pending migrations.")
-
-    cur.close()
-    conn.close()
-
-
 def apply_migrations():
     print("Applying migrations...")
     call_command('migrate')
@@ -61,6 +26,49 @@ def migrations_needed():
     return bool(plan)
 
 
+def database_exists():
+    load_dotenv(dotenv_path='.env')
+    try:
+        conn = psycopg2.connect(
+            dbname=os.getenv('DB_NAME'),
+            user=os.getenv('DB_USER'),
+            password=os.getenv('DB_PASSWORD'),
+            host=os.getenv('DB_HOST'),
+            port=os.getenv('DB_PORT')
+        )
+        conn.close()
+        return True
+    except psycopg2.OperationalError:
+        return False
+
+
+def create_database():
+    load_dotenv(dotenv_path='.env')
+    if not database_exists():
+        try:
+            conn = psycopg2.connect(
+                dbname='postgres',
+                user=os.getenv('DB_USER'),
+                password=os.getenv('DB_PASSWORD'),
+                host=os.getenv('DB_HOST'),
+                port=os.getenv('DB_PORT')
+            )
+            conn.autocommit = True
+            cur = conn.cursor()
+            dbname = os.getenv('DB_NAME')
+
+            cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
+            print(f"Database '{dbname}' created successfully.")
+
+            cur.close()
+            conn.close()
+        except psycopg2.OperationalError as e:
+            print(f"OperationalError: {e}")
+            print("Please check your database server and connection details.")
+    else:
+        print(f"Database '{os.getenv('DB_NAME')}' already exists.")
+
+
 def create_superuser():
     """Create superuser if not exists."""
     from django.contrib.auth import get_user_model
@@ -78,19 +86,3 @@ def create_superuser():
             print(f'Superuser {superuser_username} already exists')
     else:
         print('Superuser credentials not provided in environment variables')
-
-
-def database_exists():
-    load_dotenv(dotenv_path='.env')
-    try:
-        conn = psycopg2.connect(
-            dbname=os.getenv('DB_NAME'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            host=os.getenv('DB_HOST'),
-            port=os.getenv('DB_PORT')
-        )
-        conn.close()
-        return True
-    except psycopg2.OperationalError:
-        return False
