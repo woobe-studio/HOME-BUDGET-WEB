@@ -36,11 +36,46 @@ logger = logging.getLogger(__name__)
 
 
 class RegisterView(View):
+    """
+    A view for handling user registration.
+
+    This view manages the registration of new users. It renders the registration form on GET requests and processes
+    the form submission on POST requests.
+
+    Example:
+        urlpatterns = [
+            path('register/', RegisterView.as_view(), name='register'),
+        ]
+
+    Attributes:
+        form_class: The form class used for registration.
+        initial: Initial data for the form.
+        template_name: The template used to render the registration page.
+
+    Methods:
+        dispatch: Handles requests and ensures authenticated users are redirected.
+        get: Renders the registration form.
+        post: Processes form submission and handles user registration.
+    """
+
     form_class = RegisterForm
     initial = {'key': 'value'}
     template_name = 'users/register.html'
 
     def dispatch(self, request, *args, **kwargs):
+        """
+        Handles requests and ensures authenticated users are redirected.
+
+        If the user is authenticated, they are redirected to the home page.
+
+        Args:
+            request: The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: The HTTP response.
+        """
         if request.user.is_authenticated:
             logger.info('Authenticated user tried to access the register page.')
             return redirect(to='/')
@@ -49,11 +84,36 @@ class RegisterView(View):
         return super(RegisterView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
+        """
+        Renders the registration form.
+
+        Args:
+            request: The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: The rendered registration form.
+        """
         form = self.form_class(initial=self.initial)
         logger.debug('Rendering registration form.')
         return render(request, self.template_name, {'form': form})
 
     def post(self, request, *args, **kwargs):
+        """
+        Processes form submission and handles user registration.
+
+        If the form is valid, the user is registered and redirected to the login page. If the form is invalid,
+        the form is re-rendered with errors.
+
+        Args:
+            request: The HTTP request object.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+
+        Returns:
+            HttpResponse: The HTTP response.
+        """
         form = self.form_class(request.POST)
 
         if form.is_valid():
@@ -68,9 +128,38 @@ class RegisterView(View):
 
 
 class CustomLoginView(LoginView):
+    """
+    A custom login view that extends the built-in LoginView.
+
+    This view uses a custom login form and handles the 'remember me' functionality.
+    If the 'remember me' checkbox is not selected, the session will expire when the browser is closed.
+
+    Example:
+        urlpatterns = [
+            path('login/', CustomLoginView.as_view(), name='login'),
+        ]
+
+    Attributes:
+        form_class: The form class used for login.
+
+    Methods:
+        form_valid: Processes a valid form submission and handles the 'remember me' functionality.
+    """
+
     form_class = LoginForm
 
     def form_valid(self, form):
+        """
+        Processes a valid form submission and handles the 'remember me' functionality.
+
+        If the 'remember me' checkbox is not selected, the session will expire when the browser is closed.
+
+        Args:
+            form: The submitted form instance.
+
+        Returns:
+            HttpResponse: The HTTP response.
+        """
         remember_me = form.cleaned_data.get('remember_me')
 
         if not remember_me:
@@ -82,37 +171,131 @@ class CustomLoginView(LoginView):
 
 
 class ResetPasswordView(SuccessMessageMixin, PasswordResetView):
+    """
+    A view for handling password reset requests.
+
+    This view extends the PasswordResetView and includes a success message when the password reset email is sent.
+    It uses custom templates for rendering the password reset form, email, and email subject.
+
+    Example:
+        urlpatterns = [
+            path('password_reset/', ResetPasswordView.as_view(), name='password_reset'),
+        ]
+
+    Attributes:
+        template_name: The template used to render the password reset form.
+        email_template_name: The template used to render the password reset email.
+        subject_template_name: The template used to render the email subject.
+        success_message: The message displayed after a successful form submission.
+        success_url: The URL to redirect to after a successful form submission.
+
+    Methods:
+        form_valid: Logs a message when the password reset form is submitted and processes the form.
+    """
+
     template_name = 'users/password_reset.html'
     email_template_name = 'users/password_reset_email.html'
     subject_template_name = 'users/password_reset_subject'
-    success_message = "We've emailed you instructions for setting your password, " \
-                      "if an account exists with the email you entered. You should receive them shortly." \
-                      " If you don't receive an email, " \
-                      "please make sure you've entered the address you registered with, and check your spam folder."
+    success_message = (
+        "We've emailed you instructions for setting your password, "
+        "if an account exists with the email you entered. You should receive them shortly."
+        " If you don't receive an email, "
+        "please make sure you've entered the address you registered with, and check your spam folder."
+    )
     success_url = reverse_lazy('users-home')
 
     def form_valid(self, form):
+        """
+        Logs a message when the password reset form is submitted and processes the form.
+
+        Args:
+            form: The submitted form instance.
+
+        Returns:
+            HttpResponse: The HTTP response.
+        """
         logger.info('Password reset form submitted.')
         return super().form_valid(form)
 
 
 class ChangePasswordView(SuccessMessageMixin, PasswordChangeView):
+    """
+    A view for handling password changes.
+
+    This view extends the PasswordChangeView and includes a success message when the password is successfully changed.
+    It uses a custom template for rendering the password change form.
+
+    Example:
+        urlpatterns = [
+            path('change_password/', ChangePasswordView.as_view(), name='change_password'),
+        ]
+
+    Attributes:
+        template_name: The template used to render the password change form.
+        success_message: The message displayed after a successful form submission.
+        success_url: The URL to redirect to after a successful form submission.
+
+    Methods:
+        form_valid: Logs a message when the password change form is submitted and processes the form.
+    """
+
     template_name = 'users/change_password.html'
     success_message = "Successfully Changed Your Password"
     success_url = reverse_lazy('users-home')
 
     def form_valid(self, form):
+        """
+        Logs a message when the password change form is submitted and processes the form.
+
+        Args:
+            form: The submitted form instance.
+
+        Returns:
+            HttpResponse: The HTTP response.
+        """
         logger.info(f'User {self.request.user} changed their password.')
         return super().form_valid(form)
 
 
 def home(request):
+    """
+    Renders the home page.
+
+    This view handles rendering the home page for users and logs when the page is accessed.
+
+    Example:
+        urlpatterns = [
+            path('', home, name='home'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered home page.
+    """
     logger.info('User accessed home page.')
     return render(request, 'users/home.html')
 
 
 @login_required
 def profile(request):
+    """
+    Handles user profile viewing and updating.
+
+    This view renders the profile page for the logged-in user and handles form submissions for updating user and profile information.
+
+    Example:
+        urlpatterns = [
+            path('profile/', profile, name='profile'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered profile page or a redirect to the profile page after successful form submission.
+    """
     logger.info('User accessed profile page.')
 
     if request.method == 'POST':
@@ -142,6 +325,22 @@ def profile(request):
 
 @login_required
 def wallet_selection(request):
+    """
+    Renders the wallet selection page for the logged-in user.
+
+    This view fetches the wallets associated with the user's profile and displays them on the wallet selection page.
+
+    Example:
+        urlpatterns = [
+            path('wallet_selection/', wallet_selection, name='wallet_selection'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered wallet selection page with the user's wallets.
+    """
     logger.info('User accessed wallet selection page.')
 
     current_profile = request.user.profile
@@ -154,6 +353,23 @@ def wallet_selection(request):
 
 @login_required
 def wallets_pie_chart(request):
+    """
+    Renders the wallets pie chart page for the logged-in user.
+
+    This view fetches the wallets associated with the user's profile, converts their balances to the selected currency,
+    and prepares data for displaying a pie chart.
+
+    Example:
+        urlpatterns = [
+            path('wallets_pie_chart/', wallets_pie_chart, name='wallets_pie_chart'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: The rendered wallets pie chart page with the prepared data.
+    """
     logger.info('User accessed wallets pie chart page.')
 
     current_profile = request.user.profile
@@ -174,7 +390,7 @@ def wallets_pie_chart(request):
     wallet_amounts_pln = []
 
     for wallet in wallets:
-        # Convert balance to PLN
+        # Convert balance to the selected currency
         balance_pln = currency_converter.convert(wallet.balance, wallet.currency, selected_currency)
 
         wallet_names.append(wallet.name)
@@ -190,12 +406,29 @@ def wallets_pie_chart(request):
 
     serialized_data = json.dumps(data, cls=DjangoJSONEncoder)
 
-    return render(request, 'users/wallets_pie_chart.html',
-                  {'data': serialized_data, 'selected_currency': selected_currency})
+    return render(request, 'users/wallets_pie_chart.html', {'data': serialized_data, 'selected_currency': selected_currency})
 
 
 @login_required
 def create_wallet(request):
+    """
+    Handles wallet creation for the logged-in user.
+
+    This view processes the form submission for creating a new wallet, checking for duplicate names,
+    and associating the wallet with the user's profile. It can create personal or group wallets
+    and assign default categories to the new wallet.
+
+    Example:
+        urlpatterns = [
+            path('create_wallet/', create_wallet, name='create_wallet'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: A redirect to the wallet selection page on failure or to the new wallet page on success.
+    """
     logger.info('User accessed create wallet page.')
 
     if request.method == 'POST':
@@ -248,6 +481,25 @@ def create_wallet(request):
 
 @login_required
 def select_existing_wallet(request):
+    """
+    Renders the select existing wallet page for the logged-in user.
+
+    This view handles both GET and POST requests. If a POST request is received, it redirects
+    the user to the selected existing wallet page. If a GET request is received, it renders
+    the select existing wallet page.
+
+    Example:
+        urlpatterns = [
+            path('select_existing_wallet/', select_existing_wallet, name='select_existing_wallet'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        HttpResponse: A redirect to the selected existing wallet page on POST request or
+                      the rendered select existing wallet page on GET request.
+    """
     logger.info('User accessed select existing wallet page.')
 
     if request.method == 'POST':
@@ -267,6 +519,24 @@ def select_existing_wallet(request):
 
 @login_required
 def wallet(request, wallet_id):
+    """
+    Renders the wallet page and handles balance updates.
+
+    This view allows users to view and update the balance of a specific wallet.
+    It logs user actions and validates form submissions for updating the balance.
+
+    Example:
+        urlpatterns = [
+            path('wallet/<int:wallet_id>/', wallet, name='wallet'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet to display.
+
+    Returns:
+        HttpResponse: The rendered wallet page with the wallet details and form.
+    """
     logger.info(f"User accessed wallet with ID {wallet_id}.")
 
     profile = request.user.profile
@@ -337,6 +607,23 @@ def wallet(request, wallet_id):
 
 @login_required
 def clear_categories(request, wallet_id):
+    """
+    Clears categories for a specific wallet and adds default categories.
+
+    This view allows users to clear all categories associated with a wallet and add default categories.
+
+    Example:
+        urlpatterns = [
+            path('clear_categories/<int:wallet_id>/', clear_categories, name='clear_categories'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet to clear categories for.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the wallet page after clearing and adding default categories.
+    """
     logger.info(f"User cleared categories for wallet with ID {wallet_id}.")
 
     profile = request.user.profile
@@ -358,6 +645,24 @@ def clear_categories(request, wallet_id):
 
 @login_required
 def balance_changes(request, wallet_id):
+    """
+    Renders the balance changes page for a specific wallet.
+
+    This view allows users to view balance changes for a specific wallet.
+    It supports filtering and sorting options for balance changes.
+
+    Example:
+        urlpatterns = [
+            path('balance_changes/<int:wallet_id>/', balance_changes, name='balance_changes'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet to display balance changes for.
+
+    Returns:
+        HttpResponse: The rendered balance changes page with filtering and sorting options.
+    """
     logger.info(f"User accessed balance changes for wallet with ID {wallet_id}.")
 
     profile = request.user.profile
@@ -489,6 +794,23 @@ def balance_changes(request, wallet_id):
 
 @login_required
 def clear_balance_changes(request, wallet_id):
+    """
+    Clears the balance change history for a specific wallet.
+
+    This view allows users to clear all balance change history associated with a wallet.
+
+    Example:
+        urlpatterns = [
+            path('clear_balance_changes/<int:wallet_id>/', clear_balance_changes, name='clear_balance_changes'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet to clear balance change history for.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the balance changes page after clearing the history.
+    """
     logger.info(f"User requested to clear balance change history for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
@@ -502,6 +824,23 @@ def clear_balance_changes(request, wallet_id):
 
 @login_required
 def edit_balance_change(request, wallet_id):
+    """
+    Edits a specific balance change associated with a wallet.
+
+    This view allows users to edit the description and category of a balance change.
+
+    Example:
+        urlpatterns = [
+            path('edit_balance_change/<int:wallet_id>/', edit_balance_change, name='edit_balance_change'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet associated with the balance change.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the balance changes page after editing the balance change.
+    """
     logger.info(f"User requested to edit balance change for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
@@ -540,6 +879,23 @@ def edit_balance_change(request, wallet_id):
 
 @login_required
 def delete_balance_change(request, wallet_id):
+    """
+    Deletes a specific balance change associated with a wallet.
+
+    This view allows users to delete a balance change, and it adjusts the wallet balance accordingly.
+
+    Example:
+        urlpatterns = [
+            path('delete_balance_change/<int:wallet_id>/', delete_balance_change, name='delete_balance_change'),
+        ]
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet associated with the balance change.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the balance changes page after deleting the balance change.
+    """
     logger.info(f"User requested to delete balance change for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
@@ -567,6 +923,18 @@ def delete_balance_change(request, wallet_id):
 
 @login_required
 def export_balance_changes(request, wallet_id):
+    """
+    Exports balance changes associated with a specific wallet.
+
+    This view allows users to export balance changes in different formats such as PDF, CSV, or Excel.
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet associated with the balance changes.
+
+    Returns:
+        HttpResponse: An HTTP response with the exported balance changes in the specified format.
+    """
     logger.info(f"User requested to export balance changes for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
@@ -712,6 +1080,18 @@ def export_balance_changes(request, wallet_id):
 
 @login_required
 def charts(request, wallet_id):
+    """
+    Renders charts for the balance changes associated with a specific wallet.
+
+    This view allows users to visualize their income and expenses in the form of charts.
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet associated with the balance changes.
+
+    Returns:
+        HttpResponse: An HTTP response containing the rendered charts.
+    """
     logger.info(f"User requested charts for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
@@ -774,6 +1154,18 @@ def charts(request, wallet_id):
 
 @login_required
 def add_or_remove_users(request, wallet_id):
+    """
+    Handles adding or removing users from a wallet.
+
+    This view allows the owner of a group wallet to add or remove users from the wallet.
+
+    Args:
+        request: The HTTP request object.
+        wallet_id: The ID of the wallet for which users are being added or removed.
+
+    Returns:
+        HttpResponse: An HTTP response containing the template for adding or removing users.
+    """
     logger.info(f"User accessed add_or_remove_users view for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])

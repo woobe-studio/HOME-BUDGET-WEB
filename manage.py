@@ -3,7 +3,10 @@
 import os
 import sys
 
-import psycopg2
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def main():
@@ -15,12 +18,12 @@ def main():
         import django
 
         # Check if the database exists before setting up Django
+
         if not database_exists():
-            print("Database does not exist. Attempting to create...")
+            logger.info("Database does not exist. Attempting to create...")
             create_database()
         else:
-            print("Database exists.")
-
+            logger.info("Database exists.")
 
         # Set up Django
         django.setup()
@@ -28,7 +31,7 @@ def main():
         if migrations_needed():
             apply_migrations()
         else:
-            print("No pending migrations.")
+            logger.info("No pending migrations.")
         create_superuser()
 
         # Run the command passed to the script (e.g., runserver, shell, etc.)
@@ -40,6 +43,7 @@ def main():
             "available on your PYTHONPATH environment variable? Did you "
             "forget to activate a virtual environment?"
         ) from exc
+
 
 if __name__ == '__main__':
     main()

@@ -4,10 +4,13 @@ import psycopg2
 from django.core.management import call_command
 from dotenv import load_dotenv
 from psycopg2 import sql
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def apply_migrations():
-    print("Applying migrations...")
+    logger.info("Applying migrations...")
     call_command('migrate')
 
 
@@ -58,15 +61,15 @@ def create_database():
             dbname = os.getenv('DB_NAME')
 
             cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(dbname)))
-            print(f"Database '{dbname}' created successfully.")
+            logger.info(f"Database '{dbname}' created successfully.")
 
             cur.close()
             conn.close()
         except psycopg2.OperationalError as e:
-            print(f"OperationalError: {e}")
-            print("Please check your database server and connection details.")
+            logger.error(f"OperationalError: {e}")
+            logger.error("Please check your database server and connection details.")
     else:
-        print(f"Database '{os.getenv('DB_NAME')}' already exists.")
+        logger.info(f"Database '{os.getenv('DB_NAME')}' already exists.")
 
 
 def create_superuser():
@@ -81,8 +84,8 @@ def create_superuser():
     if superuser_username and superuser_email and superuser_password:
         if not User.objects.filter(username=superuser_username).exists():
             call_command('createsuperuser', username=superuser_username, email=superuser_email, interactive=False)
-            print(f'Superuser {superuser_username} created')
+            logger.info(f'Superuser {superuser_username} created')
         else:
-            print(f'Superuser {superuser_username} already exists')
+            logger.info(f'Superuser {superuser_username} already exists')
     else:
-        print('Superuser credentials not provided in environment variables')
+        logger.warning('Superuser credentials not provided in environment variables')
