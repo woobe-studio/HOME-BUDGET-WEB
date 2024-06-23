@@ -2,14 +2,20 @@
 
 set -e
 
-host="$1"
-shift
-cmd="$@"
+# Start PostgreSQL if it's not already running
+if ! pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; then
+    echo "PostgreSQL is not running - starting PostgreSQL"
+    service postgresql start
+else
+    echo "PostgreSQL is already running"
+fi
 
-until pg_isready -h "$host" -U "${POSTGRES_USER}" > /dev/null 2>&1; do
-  >&2 echo "Postgres is unavailable - sleeping"
-  sleep 1
+# Wait until PostgreSQL is fully ready
+until pg_isready -U "$POSTGRES_USER" > /dev/null 2>&1; do
+    echo "PostgreSQL is still starting - sleeping"
+    sleep 1
 done
 
->&2 echo "Postgres is up - executing command"
-exec $cmd
+# Execute the command
+echo "Starting Django server"
+exec "$@"

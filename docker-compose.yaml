@@ -2,24 +2,24 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:latest
+    image: user/postgres:latest
     container_name: postgres_db
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
 
-  web:
-    build: .
+  db_and_web:
+    image: user/home_budget_web:latest
     container_name: django_app
     ports:
       - "8000:8000"
@@ -28,17 +28,18 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
+      - DB_HOST=db
+      - DB_PORT=5432
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
       - DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
       - DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
       - DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
       - SECRET_KEY=${SECRET_KEY}
+    command: ["./wait-for-db.sh", "python", "manage.py", "runserver", "0.0.0.0:8000"]
     depends_on:
-      db:
-        condition: service_healthy
-    command: ["./wait-for-db.sh", "db", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+      - db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
 
 volumes:
   postgres_data:
