@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var pieData = {
         labels: data.wallet_names,
         datasets: [{
-            label: 'Wallet Amount (PLN)',
+            label: 'Wallet Amount',
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',   // Red
                 'rgba(54, 162, 235, 0.2)',   // Blue
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
         },
         title: {
             display: true,
-            text: 'Wallet Balance (PLN)',
+            text: 'Wallet Balance',
             fontSize: 18
         }
     });
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             currencyInput.type = 'hidden';
             currencyInput.name = 'currencySelect';
             currencyInput.value = currencySelect;
-        
+
             form.appendChild(csrfInput);
             form.appendChild(currencyInput);
 
