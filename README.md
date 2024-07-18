@@ -32,7 +32,7 @@ If you need additional details or a different focus, please let me know!
 
 <div style="text-align: center;">
 
-### 🏠 Home Page:
+### 🏠 Home View:
 <img src="git_images/git_home.png" width="800">
 
 ### 🔑 Log In View:
@@ -53,7 +53,7 @@ If you need additional details or a different focus, please let me know!
 ### 📈 Data Visualization:
 <img src="git_images/git_charts.png" width="800">
 
-### 📄 Docs Home Page:
+### 📄 Docs Home View:
 <img src="git_images/docs_home_view.png" width="800">
 
 ### 📊 Example of some documentation:
