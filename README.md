@@ -1,9 +1,11 @@
 # 🎉 Django Home Budget Web App 🎉
+
 College Project for managing funds and accounts with a register/login system, profile view, and OAuth.
 
 ## ✨ Current Features (24.06.2024) ✨
-    
+
 ### 🔐 Log In Features:
+
 - **Register** – Users can register and create a new profile.
 - **Login** – Registered users can log in using their username and password.
 - **Social Apps Login** – Users can log in using their GitHub or Google account.
@@ -14,6 +16,7 @@ College Project for managing funds and accounts with a register/login system, pr
 - **Admin Panel** – Admins can create, read, update, and delete users.
 
 ### 💰 Wallet Features:
+
 - **Update Funds** – Users can update funds in their wallet.
 - **Edit or Delete Balance Change** – Users can edit the description or category, or even delete it.
 - **Add or Remove Users** – Wallet creators can remove or add users to a group wallet.
@@ -33,31 +36,40 @@ If you need additional details or a different focus, please let me know!
 <div style="text-align: center;">
 
 ### 🏠 Home View:
-<img src="git_images/git_home.png" width="800">
+
+<img src="git_images/git_home.webp" width="800">
 
 ### 🔑 Log In View:
-<img src="git_images/git_login.png" width="800">
+
+<img src="git_images/git_login.webp" width="800">
 
 ### 💼 Wallets View:
-<img src="git_images/git_wallets.png" width="800">
+
+<img src="git_images/git_wallets.webp" width="800">
 
 ### 💳 Wallet View:
-<img src="git_images/git_wallet.png" width="800">
+
+<img src="git_images/git_wallet.webp" width="800">
 
 ### 📊 Balance View:
-<img src="git_images/git_balance.png" width="800">
+
+<img src="git_images/git_balance.webp" width="800">
 
 ### ➕➖ Add or Remove Users:
-<img src="git_images/git_add_users.png" width="800">
+
+<img src="git_images/git_add_users.webp" width="800">
 
 ### 📈 Data Visualization:
-<img src="git_images/git_charts.png" width="800">
+
+<img src="git_images/git_charts.webp" width="800">
 
 ### 📄 Docs Home View:
-<img src="git_images/docs_home_view.png" width="800">
+
+<img src="git_images/docs_home_view.webp" width="800">
 
 ### 📊 Example of some documentation:
-<img src="git_images/docs_view.png" width="800">
+
+<img src="git_images/docs_view.webp" width="800">
 
 </div>
 
@@ -97,8 +109,9 @@ SOCIAL_AUTH_GITHUB_SECRET=your_github_secret
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY=your_google_key
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET=your_google_secret
 ```
-## 🛠️ Database Configuration
-This project uses a PostgreSQL database configured using Railway. However, you can use any PostgreSQL instance you prefer. Ensure to update the database settings in the `.env` file accordingly.
 
+## 🛠️ Database Configuration
+
+This project uses a PostgreSQL database configured using Railway. However, you can use any PostgreSQL instance you prefer. Ensure to update the database settings in the `.env` file accordingly.
 
 Enjoy managing your budget with ease and clarity! 🚀
