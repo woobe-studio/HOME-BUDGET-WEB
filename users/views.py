@@ -306,12 +306,16 @@ def profile(request):
 
         if user_form.is_valid() and profile_form.is_valid():
             logger.debug('Profile form is valid.')
-
-            user_form.save()
-            profile_form.save()
-            messages.success(request, 'Your profile is updated successfully')
-            logger.info('User profile updated successfully.')
-            return redirect(to='users-profile')
+            profile = str(request.user.profile)
+            if profile == "demotest":
+                logger.error("Demo accounts cannot modify profile information.")
+                messages.error(request, "Demo accounts cannot modify profile information.")
+            else:
+                user_form.save()
+                profile_form.save()
+                messages.success(request, 'Your profile is updated successfully')
+                logger.info('User profile updated successfully.')
+                return redirect(to='users-profile')
         else:
             logger.warning('Profile form is invalid.')
     else:
@@ -814,11 +818,18 @@ def clear_balance_changes(request, wallet_id):
     logger.info(f"User requested to clear balance change history for wallet with ID {wallet_id}.")
 
     wallet = get_object_or_404(Wallet, id=wallet_id, profiles__in=[request.user.profile])
-    BalanceChange.objects.filter(wallet=wallet).delete()
 
-    logger.info("Balance change history cleared successfully.")
+    profile = str(request.user.profile)
+    if profile == "demotest":
+        logger.error("Demo accounts cannot clear the balance.")
+        messages.error(request, "Demo accounts cannot clear the balance.")
+    else:
+        BalanceChange.objects.filter(wallet=wallet).delete()
 
-    messages.success(request, "All balance change history has been cleared.")
+        logger.info("Balance change history cleared successfully.")
+
+        messages.success(request, "All balance change history has been cleared.")
+
     return redirect('users-balance_changes', wallet_id=wallet_id)
 
 
@@ -1173,7 +1184,11 @@ def add_or_remove_users(request, wallet_id):
     if request.method == 'POST':
         min_profile_id = wallet.profiles.aggregate(min_id=Min('id'))['min_id']
         wallet_owner = Profile.objects.get(id=min_profile_id)
-        if wallet_owner != request.user.profile:
+        profile = str(request.user.profile)
+        if profile == "demotest":
+            logger.error("Demo accounts cannot add or remove users.")
+            messages.error(request, "Demo accounts cannot add or remove users.")
+        elif wallet_owner != request.user.profile:
             logger.warning('Unauthorized access attempt: User is not the owner of this wallet.')
             messages.error(request, 'You are not the owner of this wallet.')
         else:
