@@ -162,8 +162,8 @@ SOCIAL_AUTH_GITHUB_KEY = str(os.getenv('SOCIAL_AUTH_GITHUB_KEY'))
 SOCIAL_AUTH_GITHUB_SECRET = str(os.getenv('SOCIAL_AUTH_GITHUB_SECRET'))
 
 # social auth configs for Google
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('GOOGLE_KEY'))
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('GOOGLE_SECRET'))
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = str(os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY'))
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = str(os.getenv('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET'))
 
 # email configs
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
