@@ -23,7 +23,6 @@ def main():
             create_database()
         else:
             logger.info("Database exists.")
-
         # Set up Django
         django.setup()
 
