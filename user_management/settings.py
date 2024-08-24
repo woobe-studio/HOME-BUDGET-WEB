@@ -29,7 +29,8 @@ SECRET_KEY = str(os.getenv('SECRET_KEY'))
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = [str(os.getenv('ALLOWED_HOSTS', 'localhost')).split()]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split()
+
 
 
 
@@ -181,34 +182,35 @@ SESSION_COOKIE_AGE = 60 * 60 * 24 * 30
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Logging configuration
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'standard': {
-            'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard',
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'app.log'),
-            'maxBytes': 1024*1024*5,  # 5 MB
-            'backupCount': 5,
-            'formatter': 'standard',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'formatters': {
+#         'standard': {
+#             'format': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+#         },
+#     },
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'standard',
+#         },
+#         # 'file': {
+#         #     'level': 'DEBUG',
+#         #     'class': 'logging.handlers.RotatingFileHandler',
+#         #     'filename': os.path.join(BASE_DIR, 'app.log'),
+#         #     'maxBytes': 1024*1024*5,  # 5 MB
+#         #     'backupCount': 5,
+#         #     'formatter': 'standard',
+#         # },
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['console'],  # Removed 'file' from the handlers list
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }
+#
