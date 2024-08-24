@@ -25,7 +25,6 @@ def main():
             logger.info("Database exists.")
         # Set up Django
         django.setup()
-
         if migrations_needed():
             apply_migrations()
         else:
