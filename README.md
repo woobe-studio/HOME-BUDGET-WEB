@@ -1,4 +1,4 @@
-# 🎉 Django Home Budget Web App 🎉
+# 🎉 Django Home Budget Web App 🎉 (3th semester, late 2023 - early 2024)
 
 College Project for managing funds and accounts with a register/login system, profile view, and OAuth.
 
